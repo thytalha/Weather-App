@@ -35,7 +35,7 @@ Welcome to the **Weather Dashboard**, a sleek web application designed to give y
 ## 🛠️ Technical Stack
 
 * **Frontend:** Vanilla HTML5, CSS3 (using CSS Variables for themes), and JavaScript (ES6+).
-* **APIs:** *
+* **APIs:**
     * [Open-Meteo](https://open-meteo.com/) for weather and UV data.
     * [BigDataCloud](https://www.bigdatacloud.com/) for reverse geocoding.
 
