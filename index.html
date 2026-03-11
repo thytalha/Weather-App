@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Weather Dashboard</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="dark-mode">
+
+    <div class="top-nav">
+        <div class="theme-toggle">
+            <input type="checkbox" id="themeSwitch" checked>
+            <label for="themeSwitch" class="toggle-label"></label>
+        </div>
+
+        <div class="search-box">
+            <input type="text" id="cityInput" placeholder="Enter your city">
+        </div>
+
+        <button id="currentLocBtn">Current Location</button>
+    </div>
+
+    <h1 class="main-title">Current Weather Forecast</h1>
+
+    <div id="loading" class="hidden" style="text-align: center; margin-top: 20px;">Loading...</div>
+    <div id="error" class="error hidden" style="text-align: center;"></div>
+
+    <div id="weatherDashboard" class="dashboard hidden">
+        
+        <div class="location-row">
+            <h2 id="location">City, Country</h2>
+        </div>
+
+        <div class="forecast-row">
+            
+            <div class="temp-col">
+                <h1 id="temperature">0°C</h1>
+                <div class="sun-info">
+                    <p>Sunrise<br><span id="sunrise">--:-- AM</span></p>
+                    <p>Sunset<br><span id="sunset">--:-- PM</span></p>
+                </div>
+            </div>
+
+            <div class="icon-col">
+                <div id="weatherIcon" class="large-icon">☀️</div>
+                <p id="condition" class="condition-text">Clear</p>
+            </div>
+
+            <div class="metrics-grid">
+                <div class="metric">
+                    <span class="icon">💧</span>
+                    <span id="humidity" class="value">0%</span>
+                    <span class="label">Humidity</span>
+                </div>
+                <div class="metric">
+                    <span class="icon">💨</span>
+                    <span id="wind" class="value">0 km/h</span>
+                    <span class="label">Wind Speed</span>
+                </div>
+                <div class="metric">
+                    <span class="icon">⏲️</span>
+                    <span id="pressure" class="value">0 Inch</span>
+                    <span class="label">Pressure</span>
+                </div>
+                <div class="metric">
+                    <span class="icon">☀️</span>
+                    <span id="uv" class="value">0</span>
+                    <span class="label">UV Index</span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
