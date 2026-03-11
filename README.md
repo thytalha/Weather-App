@@ -46,3 +46,20 @@ To run this project locally, simply clone the repository and ensure your files a
   ├── style.css     (Themes & Layout)
   ├── script.js     (API Logic & UI Updates)
   └── sample.png    (Dashboard Preview)
+
+## 👨‍💻 Author
+### Created by [Talha Pasha](https://github.com/thytalha)
+
+---
+
+## 📜 Status & Usage
+
+> [!IMPORTANT]
+> **Project Status:** In Progress
+
+This project is currently **In Progress**. I am actively working on refining the UI and potentially adding a **7-day extended forecast** feature in the future.
+
+### How to Use
+* **Explore:** Feel free to dive into the code to see how the Fetch API handles real-time weather data.
+* **Contribute:** Fork the repository or suggest new features via issues/pull requests!
+* **Remix:** Whether you're learning or just need a solid weather template, you are welcome to use and modify this project.
