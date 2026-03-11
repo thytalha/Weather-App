@@ -3,10 +3,10 @@
 **Stay ahead of the storm. A clean, responsive weather experience.**
 
 <div align="center">
+  <img src="https://img.shields.io/badge/Author-Talha%20Pasha-orange?style=for-the-badge" alt="Author">
   <img src="https://img.shields.io/badge/Language-HTML5-E34F26?style=for-the-badge&logo=html5" alt="HTML5">
   <img src="https://img.shields.io/badge/Style-CSS3-1572B6?style=for-the-badge&logo=css3" alt="CSS3">
   <img src="https://img.shields.io/badge/Logic-JavaScript-F7DF1E?style=for-the-badge&logo=javascript" alt="JavaScript">
-  <img src="https://img.shields.io/badge/Author-Talha%20Pasha-orange?style=for-the-badge" alt="Author">
   <img src="https://img.shields.io/badge/Status-In--Progress-yellow?style=for-the-badge" alt="Status">
 </div>
 
@@ -35,7 +35,8 @@ Welcome to the **Weather Dashboard**, a sleek web application designed to give y
 ## 🛠️ Technical Stack
 
 * **Frontend:** Vanilla HTML5, CSS3 (using CSS Variables for themes), and JavaScript (ES6+).
-* **APIs:** * [Open-Meteo](https://open-meteo.com/) for weather and UV data.
+* **APIs:** *
+    * [Open-Meteo](https://open-meteo.com/) for weather and UV data.
     * [BigDataCloud](https://www.bigdatacloud.com/) for reverse geocoding.
 
 
