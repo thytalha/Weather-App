@@ -2,11 +2,13 @@
 
 **Stay ahead of the storm. A clean, responsive weather experience.**
 
-![HTML5](https://img.shields.io/badge/Language-HTML5-E34F26?style=for-the-badge&logo=html5)
-![CSS3](https://img.shields.io/badge/Style-CSS3-1572B6?style=for-the-badge&logo=css3)
-![JavaScript](https://img.shields.io/badge/Logic-JavaScript-F7DF1E?style=for-the-badge&logo=javascript)
-![Author](https://img.shields.io/badge/Author-Talha%20Pasha-orange?style=for-the-badge)
-![Status](https://img.shields.io/badge/Status-In--Progress-yellow?style=for-the-badge)
+<div align="center">
+  <img src="https://img.shields.io/badge/Language-HTML5-E34F26?style=for-the-badge&logo=html5" alt="HTML5">
+  <img src="https://img.shields.io/badge/Style-CSS3-1572B6?style=for-the-badge&logo=css3" alt="CSS3">
+  <img src="https://img.shields.io/badge/Logic-JavaScript-F7DF1E?style=for-the-badge&logo=javascript" alt="JavaScript">
+  <img src="https://img.shields.io/badge/Author-Talha%20Pasha-orange?style=for-the-badge" alt="Author">
+  <img src="https://img.shields.io/badge/Status-In--Progress-yellow?style=for-the-badge" alt="Status">
+</div>
 
 ***Sample Screenshot of the Dashboard 👇👇***
 ![Weather Dashboard Screenshot](sample.png)
@@ -36,16 +38,6 @@ Welcome to the **Weather Dashboard**, a sleek web application designed to give y
 * **APIs:** * [Open-Meteo](https://open-meteo.com/) for weather and UV data.
     * [BigDataCloud](https://www.bigdatacloud.com/) for reverse geocoding.
 
-## 📂 Project Structure
-
-To run this project locally, simply clone the repository and ensure your files are organized as follows:
-
-```text
-/Weather-Dashboard
-  ├── index.html    (Structure & UI)
-  ├── style.css     (Themes & Layout)
-  ├── script.js     (API Logic & UI Updates)
-  └── sample.png    (Dashboard Preview)
 
 ## 👨‍💻 Author
 ### Created by [Talha Pasha](https://github.com/thytalha)
