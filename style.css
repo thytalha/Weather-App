@@ -37,7 +37,7 @@ body {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    max-width: 1000px;
+    max-width: 1100px;
     margin: 0 auto 40px auto;
 }
 
@@ -88,6 +88,7 @@ body {
     margin-top: 40px;
     font-size: 1.8rem;
     text-align: center;
+    margin-bottom: 20px;
 }
 
 .dashboard {
@@ -95,7 +96,7 @@ body {
     flex-direction: column;
     align-items: center;
     gap: 30px;
-    max-width: 1000px;
+    max-width: 1100px;
     margin: 0 auto;
 }
 
@@ -145,13 +146,40 @@ body:not(.dark-mode) .sun-info p { color: #555; }
 .metric .label { font-size: 0.9rem; color: #ccc; }
 body:not(.dark-mode) .metric .label { color: #555; }
 
+/* 24-Hour Wrapped Container */
+.hourly-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+    width: 100%;
+}
+
+.hourly-card {
+    background-color: var(--forecast-card-bg);
+    /* Exactly 8 cards per row (100 / 8 = 12.5%) */
+    flex: 1 1 calc(12.5% - 12px);
+    min-width: 110px;
+    min-height: 150px; /* Increased height as requested */
+    padding: 20px 10px;
+    border-radius: 12px;
+    text-align: center;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+.hourly-card .time { font-size: 0.85rem; font-weight: bold; }
+.hourly-card .icon { font-size: 1.8rem; }
+.hourly-card .temp { font-weight: bold; font-size: 1.1rem; }
+
 /* 7-Day Forecast Container */
 .forecast-container {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
     gap: 15px;
     width: 100%;
-    margin-top: 20px;
 }
 
 .forecast-card {
@@ -160,11 +188,6 @@ body:not(.dark-mode) .metric .label { color: #555; }
     border-radius: 15px;
     text-align: center;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-    transition: transform 0.2s;
-}
-
-.forecast-card:hover {
-    transform: translateY(-5px);
 }
 
 .forecast-card .day { font-weight: bold; margin-bottom: 10px; display: block; }
@@ -175,34 +198,10 @@ body:not(.dark-mode) .metric .label { color: #555; }
 .hidden { display: none !important; }
 .error { color: #ff4d4d; }
 
-
-.hourly-container {
-    display: flex;
-    overflow-x: auto;
-    gap: 15px;
-    width: 100%;
-    padding: 20px 0;
-    scrollbar-width: thin; /* For Firefox */
+/* Responsiveness for smaller screens */
+@media (max-width: 900px) {
+    .hourly-card { flex: 1 1 calc(25% - 12px); } /* 4 per row */
 }
-
-/* Custom scrollbar styling for Chrome/Edge */
-.hourly-container::-webkit-scrollbar {
-    height: 8px;
+@media (max-width: 500px) {
+    .hourly-card { flex: 1 1 calc(50% - 12px); } /* 2 per row */
 }
-.hourly-container::-webkit-scrollbar-thumb {
-    background: #4facfe;
-    border-radius: 10px;
-}
-
-.hourly-card {
-    background-color: var(--forecast-card-bg);
-    min-width: 100px;
-    padding: 15px;
-    border-radius: 12px;
-    text-align: center;
-    flex-shrink: 0;
-    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-}
-
-.hourly-card .time { font-size: 0.9rem; margin-bottom: 8px; display: block; }
-.hourly-card .temp { font-weight: bold; font-size: 1.1rem; }

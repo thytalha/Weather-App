@@ -9,7 +9,6 @@ const dashboard = document.getElementById("weatherDashboard");
 const loading = document.getElementById("loading");
 const errorDiv = document.getElementById("error");
 
-// New Containers
 const forecastContainer = document.getElementById("forecastContainer");
 const hourlyContainer = document.getElementById("hourlyContainer");
 
@@ -75,7 +74,7 @@ async function fetchCoordinates(city) {
 
 async function fetchWeather(lat, lon, name, country) {
     try {
-        // Fetching Current, Hourly (24h), and Daily (7d) data
+        // Fetch Current, Hourly, and Daily data in one request
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,is_day,weather_code,surface_pressure,wind_speed_10m&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max&timezone=auto`;
         
         const weatherRes = await fetch(url);
@@ -92,7 +91,7 @@ function updateUI(data, name, country) {
     const daily = data.daily;
     const hourly = data.hourly;
 
-    // 1. Update Main Location & Current Temp
+    // 1. Current Weather Row
     const sunriseObj = new Date(daily.sunrise[0]);
     const sunsetObj = new Date(daily.sunset[0]);
     const sunriseStr = sunriseObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -114,8 +113,8 @@ function updateUI(data, name, country) {
     document.getElementById("pressure").textContent = `${pressureInches} Inch`;
     document.getElementById("uv").textContent = daily.uv_index_max[0];
 
-    // 2. Update Hourly Forecast (Next 24 Hours)
-    hourlyContainer.innerHTML = ""; // Clear existing
+    // 2. Hourly Forecast (Wrapped in 3 rows)
+    hourlyContainer.innerHTML = ""; 
     const currentHourIdx = new Date().getHours();
     for (let i = currentHourIdx; i < currentHourIdx + 24; i++) {
         const time = new Date(hourly.time[i]);
@@ -133,8 +132,8 @@ function updateUI(data, name, country) {
         hourlyContainer.appendChild(hourCard);
     }
 
-    // 3. Update 7-Day Forecast
-    forecastContainer.innerHTML = ""; // Clear existing
+    // 3. 7-Day Forecast
+    forecastContainer.innerHTML = ""; 
     for (let i = 0; i < 7; i++) {
         const date = new Date(daily.time[i]);
         const dayName = i === 0 ? "Today" : date.toLocaleDateString('en-US', { weekday: 'short' });
