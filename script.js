@@ -8,7 +8,10 @@ const currentLocBtn = document.getElementById("currentLocBtn");
 const dashboard = document.getElementById("weatherDashboard");
 const loading = document.getElementById("loading");
 const errorDiv = document.getElementById("error");
+
+// New Containers
 const forecastContainer = document.getElementById("forecastContainer");
+const hourlyContainer = document.getElementById("hourlyContainer");
 
 cityInput.addEventListener("keypress", (e) => {
     if (e.key === "Enter") {
@@ -72,8 +75,8 @@ async function fetchCoordinates(city) {
 
 async function fetchWeather(lat, lon, name, country) {
     try {
-        // Added daily max/min temperatures and weather codes for the weekly view
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,is_day,weather_code,surface_pressure,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max&timezone=auto`;
+        // Fetching Current, Hourly (24h), and Daily (7d) data
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,is_day,weather_code,surface_pressure,wind_speed_10m&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max&timezone=auto`;
         
         const weatherRes = await fetch(url);
         const data = await weatherRes.json();
@@ -87,8 +90,9 @@ async function fetchWeather(lat, lon, name, country) {
 function updateUI(data, name, country) {
     const current = data.current;
     const daily = data.daily;
+    const hourly = data.hourly;
 
-    // Update Current Weather
+    // 1. Update Main Location & Current Temp
     const sunriseObj = new Date(daily.sunrise[0]);
     const sunsetObj = new Date(daily.sunset[0]);
     const sunriseStr = sunriseObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -110,12 +114,31 @@ function updateUI(data, name, country) {
     document.getElementById("pressure").textContent = `${pressureInches} Inch`;
     document.getElementById("uv").textContent = daily.uv_index_max[0];
 
-    // Update 7-Day Forecast
-    forecastContainer.innerHTML = ""; // Clear old cards
+    // 2. Update Hourly Forecast (Next 24 Hours)
+    hourlyContainer.innerHTML = ""; // Clear existing
+    const currentHourIdx = new Date().getHours();
+    for (let i = currentHourIdx; i < currentHourIdx + 24; i++) {
+        const time = new Date(hourly.time[i]);
+        const displayTime = time.toLocaleTimeString([], { hour: 'numeric' });
+        const temp = Math.round(hourly.temperature_2m[i]);
+        const condition = getWeatherCondition(hourly.weather_code[i], 1);
+
+        const hourCard = document.createElement("div");
+        hourCard.className = "hourly-card";
+        hourCard.innerHTML = `
+            <span class="time">${displayTime}</span>
+            <span class="icon">${condition.icon}</span>
+            <span class="temp">${temp}°C</span>
+        `;
+        hourlyContainer.appendChild(hourCard);
+    }
+
+    // 3. Update 7-Day Forecast
+    forecastContainer.innerHTML = ""; // Clear existing
     for (let i = 0; i < 7; i++) {
         const date = new Date(daily.time[i]);
         const dayName = i === 0 ? "Today" : date.toLocaleDateString('en-US', { weekday: 'short' });
-        const condition = getWeatherCondition(daily.weather_code[i], 1); // Assume day icons for weekly view
+        const condition = getWeatherCondition(daily.weather_code[i], 1);
 
         const card = document.createElement("div");
         card.className = "forecast-card";

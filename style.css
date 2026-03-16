@@ -174,3 +174,35 @@ body:not(.dark-mode) .metric .label { color: #555; }
 
 .hidden { display: none !important; }
 .error { color: #ff4d4d; }
+
+
+.hourly-container {
+    display: flex;
+    overflow-x: auto;
+    gap: 15px;
+    width: 100%;
+    padding: 20px 0;
+    scrollbar-width: thin; /* For Firefox */
+}
+
+/* Custom scrollbar styling for Chrome/Edge */
+.hourly-container::-webkit-scrollbar {
+    height: 8px;
+}
+.hourly-container::-webkit-scrollbar-thumb {
+    background: #4facfe;
+    border-radius: 10px;
+}
+
+.hourly-card {
+    background-color: var(--forecast-card-bg);
+    min-width: 100px;
+    padding: 15px;
+    border-radius: 12px;
+    text-align: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+}
+
+.hourly-card .time { font-size: 0.9rem; margin-bottom: 8px; display: block; }
+.hourly-card .temp { font-weight: bold; font-size: 1.1rem; }
