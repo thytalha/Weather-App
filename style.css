@@ -5,6 +5,7 @@
     --text-color: #333333;
     --input-bg: #ffffff;
     --input-border: #cccccc;
+    --forecast-card-bg: #e0e0e0;
 }
 
 body.dark-mode {
@@ -13,6 +14,7 @@ body.dark-mode {
     --text-color: #ffffff;
     --input-bg: #ffffff;
     --input-border: #ffffff;
+    --forecast-card-bg: #3d3d3d;
 }
 
 * {
@@ -76,31 +78,33 @@ body {
 .theme-toggle input:checked + .toggle-label { background-color: #4facfe; }
 .theme-toggle input:checked + .toggle-label::after { transform: translateX(24px); }
 
-/* Main Title */
 .main-title {
     text-align: center;
     font-size: 2.5rem;
     margin-bottom: 40px;
 }
 
-/* Dashboard Layout (Stacked Rows) */
+.section-subtitle {
+    margin-top: 40px;
+    font-size: 1.8rem;
+    text-align: center;
+}
+
 .dashboard {
     display: flex;
     flex-direction: column;
     align-items: center;
     gap: 30px;
-    max-width: 900px;
+    max-width: 1000px;
     margin: 0 auto;
 }
 
-/* Row 1: Location */
 .location-row h2 { 
     font-size: 2.5rem; 
     text-align: center;
     letter-spacing: 1px;
 }
 
-/* Row 2: Forecast Details */
 .forecast-row {
     background-color: var(--card-bg);
     border-radius: 20px;
@@ -140,6 +144,33 @@ body:not(.dark-mode) .sun-info p { color: #555; }
 .metric .value { font-weight: bold; font-size: 1.2rem; }
 .metric .label { font-size: 0.9rem; color: #ccc; }
 body:not(.dark-mode) .metric .label { color: #555; }
+
+/* 7-Day Forecast Container */
+.forecast-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 15px;
+    width: 100%;
+    margin-top: 20px;
+}
+
+.forecast-card {
+    background-color: var(--forecast-card-bg);
+    padding: 20px;
+    border-radius: 15px;
+    text-align: center;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    transition: transform 0.2s;
+}
+
+.forecast-card:hover {
+    transform: translateY(-5px);
+}
+
+.forecast-card .day { font-weight: bold; margin-bottom: 10px; display: block; }
+.forecast-card .icon { font-size: 2rem; margin-bottom: 10px; display: block; }
+.forecast-card .temp-max { font-weight: bold; display: block; }
+.forecast-card .temp-min { color: #aaa; font-size: 0.9rem; }
 
 .hidden { display: none !important; }
 .error { color: #ff4d4d; }

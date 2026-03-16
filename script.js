@@ -8,6 +8,7 @@ const currentLocBtn = document.getElementById("currentLocBtn");
 const dashboard = document.getElementById("weatherDashboard");
 const loading = document.getElementById("loading");
 const errorDiv = document.getElementById("error");
+const forecastContainer = document.getElementById("forecastContainer");
 
 cityInput.addEventListener("keypress", (e) => {
     if (e.key === "Enter") {
@@ -71,7 +72,8 @@ async function fetchCoordinates(city) {
 
 async function fetchWeather(lat, lon, name, country) {
     try {
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,is_day,weather_code,surface_pressure,wind_speed_10m&daily=sunrise,sunset,uv_index_max&timezone=auto`;
+        // Added daily max/min temperatures and weather codes for the weekly view
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,is_day,weather_code,surface_pressure,wind_speed_10m&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max&timezone=auto`;
         
         const weatherRes = await fetch(url);
         const data = await weatherRes.json();
@@ -86,13 +88,13 @@ function updateUI(data, name, country) {
     const current = data.current;
     const daily = data.daily;
 
+    // Update Current Weather
     const sunriseObj = new Date(daily.sunrise[0]);
     const sunsetObj = new Date(daily.sunset[0]);
     const sunriseStr = sunriseObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
     const sunsetStr = sunsetObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
 
     document.getElementById("location").textContent = country ? `${name}, ${country}` : name;
-    
     document.getElementById("temperature").textContent = `${current.temperature_2m}°C`;
     document.getElementById("sunrise").textContent = sunriseStr;
     document.getElementById("sunset").textContent = sunsetStr;
@@ -106,8 +108,25 @@ function updateUI(data, name, country) {
     
     const pressureInches = (current.surface_pressure * 0.02953).toFixed(2);
     document.getElementById("pressure").textContent = `${pressureInches} Inch`;
-    
     document.getElementById("uv").textContent = daily.uv_index_max[0];
+
+    // Update 7-Day Forecast
+    forecastContainer.innerHTML = ""; // Clear old cards
+    for (let i = 0; i < 7; i++) {
+        const date = new Date(daily.time[i]);
+        const dayName = i === 0 ? "Today" : date.toLocaleDateString('en-US', { weekday: 'short' });
+        const condition = getWeatherCondition(daily.weather_code[i], 1); // Assume day icons for weekly view
+
+        const card = document.createElement("div");
+        card.className = "forecast-card";
+        card.innerHTML = `
+            <span class="day">${dayName}</span>
+            <span class="icon">${condition.icon}</span>
+            <span class="temp-max">${Math.round(daily.temperature_2m_max[i])}°C</span>
+            <span class="temp-min">${Math.round(daily.temperature_2m_min[i])}°C</span>
+        `;
+        forecastContainer.appendChild(card);
+    }
 
     loading.classList.add("hidden");
     dashboard.classList.remove("hidden");
