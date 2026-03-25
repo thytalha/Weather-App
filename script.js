@@ -12,6 +12,13 @@ const errorDiv = document.getElementById("error");
 const forecastContainer = document.getElementById("forecastContainer");
 const hourlyContainer = document.getElementById("hourlyContainer");
 
+// 1. Custom Dictionary for local towns and abbreviations
+const localCities = {
+    "garh more": { lat: 30.846, lon: 71.845, name: "Garh More", country: "Pakistan" },
+    "garh maharaja": { lat: 30.833, lon: 71.905, name: "Garh Maharaja", country: "Pakistan" },
+    "g m raja": { lat: 30.833, lon: 71.905, name: "Garh Maharaja", country: "Pakistan" }
+};
+
 cityInput.addEventListener("keypress", (e) => {
     if (e.key === "Enter") {
         fetchCoordinates(cityInput.value.trim());
@@ -41,13 +48,13 @@ function loadUserLocation() {
                 }
             },
             (err) => {
-                fetchCoordinates("Lahore");
+                // Default to Garh Maharaja instead of Lahore if GPS fails
+                fetchWeather(localCities["garh maharaja"].lat, localCities["garh maharaja"].lon, "Garh Maharaja", "Pakistan");
             },
-            // FIX 1: Added high accuracy to force GPS over IP address
-            { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 } 
+            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 } 
         );
     } else {
-        fetchCoordinates("Lahore");
+        fetchWeather(localCities["garh maharaja"].lat, localCities["garh maharaja"].lon, "Garh Maharaja", "Pakistan");
     }
 }
 
@@ -59,20 +66,24 @@ async function fetchCoordinates(city) {
     hideAll();
     loading.classList.remove("hidden");
 
+    // 2. Check the custom dictionary first before hitting the API
+    const query = city.toLowerCase();
+    if (localCities[query]) {
+        const { lat, lon, name, country } = localCities[query];
+        return fetchWeather(lat, lon, name, country);
+    }
+
     try {
-        // FIX 2: Swapped to OpenStreetMap API to find smaller cities like Garh Maharaja
         const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`);
         const geoData = await geoRes.json();
 
         if (!geoData || geoData.length === 0) {
-            throw new Error("City not found");
+            throw new Error("City not found. Try checking the spelling.");
         }
 
-        // Nominatim returns strings, so we parse them to floats
         const latitude = parseFloat(geoData[0].lat);
         const longitude = parseFloat(geoData[0].lon);
         
-        // Extract a clean city and country name from the display string
         const fullName = geoData[0].display_name.split(",");
         const name = fullName[0].trim();
         const country = fullName.length > 1 ? fullName[fullName.length - 1].trim() : "";
@@ -85,7 +96,6 @@ async function fetchCoordinates(city) {
 
 async function fetchWeather(lat, lon, name, country) {
     try {
-        // Fetch Current, Hourly, and Daily data in one request
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,is_day,weather_code,surface_pressure,wind_speed_10m&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max&timezone=auto`;
         
         const weatherRes = await fetch(url);
@@ -102,7 +112,6 @@ function updateUI(data, name, country) {
     const daily = data.daily;
     const hourly = data.hourly;
 
-    // 1. Current Weather Row
     const sunriseObj = new Date(daily.sunrise[0]);
     const sunsetObj = new Date(daily.sunset[0]);
     const sunriseStr = sunriseObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -124,7 +133,6 @@ function updateUI(data, name, country) {
     document.getElementById("pressure").textContent = `${pressureInches} Inch`;
     document.getElementById("uv").textContent = daily.uv_index_max[0];
 
-    // 2. Hourly Forecast (Wrapped in 3 rows)
     hourlyContainer.innerHTML = ""; 
     const currentHourIdx = new Date().getHours();
     for (let i = currentHourIdx; i < currentHourIdx + 24; i++) {
@@ -143,7 +151,6 @@ function updateUI(data, name, country) {
         hourlyContainer.appendChild(hourCard);
     }
 
-    // 3. 7-Day Forecast
     forecastContainer.innerHTML = ""; 
     for (let i = 0; i < 7; i++) {
         const date = new Date(daily.time[i]);
