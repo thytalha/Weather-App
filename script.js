@@ -42,7 +42,9 @@ function loadUserLocation() {
             },
             (err) => {
                 fetchCoordinates("Lahore");
-            }
+            },
+            // FIX 1: Added high accuracy to force GPS over IP address
+            { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 } 
         );
     } else {
         fetchCoordinates("Lahore");
@@ -58,14 +60,23 @@ async function fetchCoordinates(city) {
     loading.classList.remove("hidden");
 
     try {
-        const geoRes = await fetch(`https://geocoding-api.open-meteo.com/v1/search?name=${city}&count=1`);
+        // FIX 2: Swapped to OpenStreetMap API to find smaller cities like Garh Maharaja
+        const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`);
         const geoData = await geoRes.json();
 
-        if (!geoData.results || geoData.results.length === 0) {
+        if (!geoData || geoData.length === 0) {
             throw new Error("City not found");
         }
 
-        const { latitude, longitude, name, country } = geoData.results[0];
+        // Nominatim returns strings, so we parse them to floats
+        const latitude = parseFloat(geoData[0].lat);
+        const longitude = parseFloat(geoData[0].lon);
+        
+        // Extract a clean city and country name from the display string
+        const fullName = geoData[0].display_name.split(",");
+        const name = fullName[0].trim();
+        const country = fullName.length > 1 ? fullName[fullName.length - 1].trim() : "";
+
         fetchWeather(latitude, longitude, name, country);
     } catch (err) {
         showError(err.message);
