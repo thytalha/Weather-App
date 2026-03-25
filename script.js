@@ -36,7 +36,6 @@ function loadUserLocation() {
                 const lon = position.coords.longitude;
                 
                 try {
-                    // Get the city name for the real coordinates
                     const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
                     const geoData = await geoRes.json();
                     
@@ -45,13 +44,11 @@ function loadUserLocation() {
                     
                     fetchWeather(lat, lon, city, country);
                 } catch (err) {
-                    // If the name fetch fails, still show weather for the coordinates
                     fetchWeather(lat, lon, "Your Location", "");
                 }
             },
             (err) => {
-                // PROPER FIX: Do not guess. Tell the user to search manually.
-                showError("Could not auto-detect location. Please search for your city manually.");
+                showError("Could not auto-detect location. Please search manually.");
             },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 } 
         );
@@ -70,19 +67,17 @@ async function fetchCoordinates(city) {
 
     const query = city.toLowerCase();
     
-    // Check local dictionary first
     if (localCities[query]) {
         const { lat, lon, name, country } = localCities[query];
         return fetchWeather(lat, lon, name, country);
     }
 
     try {
-        // Use OpenStreetMap for broad global search
         const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`);
         const geoData = await geoRes.json();
 
         if (!geoData || geoData.length === 0) {
-            throw new Error("City not found. Try checking the spelling.");
+            throw new Error("City not found. Check the spelling.");
         }
 
         const latitude = parseFloat(geoData[0].lat);
@@ -100,14 +95,20 @@ async function fetchCoordinates(city) {
 
 async function fetchWeather(lat, lon, name, country) {
     try {
-        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,is_day,weather_code,surface_pressure,wind_speed_10m&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,uv_index_max&timezone=auto`;
+        // --- FIX 1: Added sunrise and sunset back to the API request ---
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,is_day,weather_code,surface_pressure,wind_speed_10m&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,windspeed_10m_max,precipitation_probability_max,uv_index_max&timezone=auto`;
         
         const weatherRes = await fetch(url);
+        
+        if (!weatherRes.ok) {
+            throw new Error(`API Error: ${weatherRes.status}`);
+        }
+        
         const data = await weatherRes.json();
-
         updateUI(data, name, country);
     } catch (err) {
-        showError("Failed to fetch weather data.");
+        console.error("Fetch Error:", err);
+        showError("Failed to fetch weather data. Check console for details.");
     }
 }
 
@@ -116,16 +117,20 @@ function updateUI(data, name, country) {
     const daily = data.daily;
     const hourly = data.hourly;
 
-    const sunriseObj = new Date(daily.sunrise[0]);
-    const sunsetObj = new Date(daily.sunset[0]);
-    const sunriseStr = sunriseObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-    const sunsetStr = sunsetObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
-
     document.getElementById("location").textContent = country ? `${name}, ${country}` : name;
-    document.getElementById("temperature").textContent = `${current.temperature_2m}°C`;
-    document.getElementById("sunrise").textContent = sunriseStr;
-    document.getElementById("sunset").textContent = sunsetStr;
+    document.getElementById("temperature").textContent = `${Math.round(current.temperature_2m)}°C`;
     
+    // Restore Sunrise and Sunset formatting
+    if (daily.sunrise && daily.sunset) {
+        const sunriseObj = new Date(daily.sunrise[0]);
+        const sunsetObj = new Date(daily.sunset[0]);
+        document.getElementById("sunrise").textContent = sunriseObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+        document.getElementById("sunset").textContent = sunsetObj.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    } else {
+        document.getElementById("sunrise").textContent = "--:--";
+        document.getElementById("sunset").textContent = "--:--";
+    }
+
     const conditionInfo = getWeatherCondition(current.weather_code, current.is_day);
     document.getElementById("weatherIcon").textContent = conditionInfo.icon;
     document.getElementById("condition").textContent = conditionInfo.text;
@@ -135,11 +140,16 @@ function updateUI(data, name, country) {
     
     const pressureInches = (current.surface_pressure * 0.02953).toFixed(2);
     document.getElementById("pressure").textContent = `${pressureInches} Inch`;
-    document.getElementById("uv").textContent = daily.uv_index_max[0];
+    
+    document.getElementById("uv").textContent = daily.uv_index_max ? daily.uv_index_max[0] : "0";
 
+    // --- FIX 2: Loop only 12 times instead of 24 for the hourly forecast ---
     hourlyContainer.innerHTML = ""; 
     const currentHourIdx = new Date().getHours();
-    for (let i = currentHourIdx; i < currentHourIdx + 24; i++) {
+    for (let i = currentHourIdx; i < currentHourIdx + 12; i++) {
+        // Prevent array out-of-bounds if near the end of the 24h data
+        if (!hourly.time[i]) break; 
+
         const time = new Date(hourly.time[i]);
         const displayTime = time.toLocaleTimeString([], { hour: 'numeric' });
         const temp = Math.round(hourly.temperature_2m[i]);
@@ -157,17 +167,67 @@ function updateUI(data, name, country) {
 
     forecastContainer.innerHTML = ""; 
     for (let i = 0; i < 7; i++) {
-        const date = new Date(daily.time[i]);
-        const dayName = i === 0 ? "Today" : date.toLocaleDateString('en-US', { weekday: 'short' });
+        const dateRaw = daily.time[i];
+        const dateObj = new Date(dateRaw);
+        const dayName = i === 0 ? "Today" : dateObj.toLocaleDateString('en-US', { weekday: 'long' });
+        
+        const dayNum = String(dateObj.getDate()).padStart(2, '0');
+        const monthNum = String(dateObj.getMonth() + 1).padStart(2, '0');
+        const yearNum = dateObj.getFullYear();
+        const formattedDate = `${dayNum}-${monthNum}-${yearNum}`;
+        
         const condition = getWeatherCondition(daily.weather_code[i], 1);
+        
+        const maxTemp = daily.temperature_2m_max ? Math.round(daily.temperature_2m_max[i]) : "--";
+        const minTemp = daily.temperature_2m_min ? Math.round(daily.temperature_2m_min[i]) : "--";
+        const avgTemp = (maxTemp !== "--" && minTemp !== "--") ? Math.round((maxTemp + minTemp) / 2) : "--";
+        
+        let maxWind = "--";
+        if (daily.windspeed_10m_max) maxWind = daily.windspeed_10m_max[i];
+        else if (daily.wind_speed_10m_max) maxWind = daily.wind_speed_10m_max[i];
+
+        const rainProb = daily.precipitation_probability_max ? daily.precipitation_probability_max[i] : "--";
+        const maxUV = daily.uv_index_max ? daily.uv_index_max[i] : "--";
 
         const card = document.createElement("div");
         card.className = "forecast-card";
         card.innerHTML = `
-            <span class="day">${dayName}</span>
-            <span class="icon">${condition.icon}</span>
-            <span class="temp-max">${Math.round(daily.temperature_2m_max[i])}°C</span>
-            <span class="temp-min">${Math.round(daily.temperature_2m_min[i])}°C</span>
+            <div class="card-header">
+                <span class="day-name">${dayName}</span>
+                <span class="full-date">${formattedDate}</span>
+            </div>
+            
+            <div class="card-status">
+                <span class="status-icon large-icon">${condition.icon}</span>
+                <span class="status-text condition-text">${condition.text}</span>
+            </div>
+            
+            <div class="card-metrics-footer">
+                <div class="footer-item">
+                    <span class="label">Max</span>
+                    <span class="value">${maxTemp}°C</span>
+                </div>
+                <div class="footer-item">
+                    <span class="label">Avg</span>
+                    <span class="value">${avgTemp}°C</span>
+                </div>
+                <div class="footer-item">
+                    <span class="label">Min</span>
+                    <span class="value">${minTemp}°C</span>
+                </div>
+                <div class="footer-item">
+                    <span class="label">Wind</span>
+                    <span class="value">${maxWind} km/h</span>
+                </div>
+                <div class="footer-item">
+                    <span class="label">Rain</span>
+                    <span class="value">${rainProb}%</span>
+                </div>
+                <div class="footer-item">
+                    <span class="label">UV Index</span>
+                    <span class="value">${maxUV}</span>
+                </div>
+            </div>
         `;
         forecastContainer.appendChild(card);
     }
