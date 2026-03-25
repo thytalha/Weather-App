@@ -12,7 +12,7 @@ const errorDiv = document.getElementById("error");
 const forecastContainer = document.getElementById("forecastContainer");
 const hourlyContainer = document.getElementById("hourlyContainer");
 
-// 1. Custom Dictionary for local towns and abbreviations
+// Custom Dictionary for local towns and abbreviations
 const localCities = {
     "garh more": { lat: 30.846, lon: 71.845, name: "Garh More", country: "Pakistan" },
     "garh maharaja": { lat: 30.833, lon: 71.905, name: "Garh Maharaja", country: "Pakistan" },
@@ -39,8 +39,20 @@ function loadUserLocation() {
                     const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
                     const geoData = await geoRes.json();
                     
-                    const city = geoData.city || geoData.locality || "Unknown Location";
-                    const country = geoData.countryName || "";
+                    let city = geoData.city || geoData.locality || "Unknown Location";
+                    let country = geoData.countryName || "";
+                    
+                    // --- THE INTERCEPTOR ---
+                    // Overrides the Wi-Fi IP routing if it defaults to Lahore
+                    if (city.toLowerCase().includes("lahore")) {
+                        console.log("Intercepted Lahore IP routing. Defaulting to Garh Maharaja.");
+                        return fetchWeather(
+                            localCities["garh maharaja"].lat, 
+                            localCities["garh maharaja"].lon, 
+                            "Garh Maharaja", 
+                            "Pakistan"
+                        );
+                    }
                     
                     fetchWeather(lat, lon, city, country);
                 } catch (err) {
@@ -48,7 +60,6 @@ function loadUserLocation() {
                 }
             },
             (err) => {
-                // Default to Garh Maharaja instead of Lahore if GPS fails
                 fetchWeather(localCities["garh maharaja"].lat, localCities["garh maharaja"].lon, "Garh Maharaja", "Pakistan");
             },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 } 
@@ -66,7 +77,6 @@ async function fetchCoordinates(city) {
     hideAll();
     loading.classList.remove("hidden");
 
-    // 2. Check the custom dictionary first before hitting the API
     const query = city.toLowerCase();
     if (localCities[query]) {
         const { lat, lon, name, country } = localCities[query];
