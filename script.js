@@ -12,7 +12,7 @@ const errorDiv = document.getElementById("error");
 const forecastContainer = document.getElementById("forecastContainer");
 const hourlyContainer = document.getElementById("hourlyContainer");
 
-// Custom Dictionary for local towns and abbreviations
+// Custom Dictionary for local abbreviations
 const localCities = {
     "garh more": { lat: 30.846, lon: 71.845, name: "Garh More", country: "Pakistan" },
     "garh maharaja": { lat: 30.833, lon: 71.905, name: "Garh Maharaja", country: "Pakistan" },
@@ -36,36 +36,27 @@ function loadUserLocation() {
                 const lon = position.coords.longitude;
                 
                 try {
+                    // Get the city name for the real coordinates
                     const geoRes = await fetch(`https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${lat}&longitude=${lon}&localityLanguage=en`);
                     const geoData = await geoRes.json();
                     
-                    let city = geoData.city || geoData.locality || "Unknown Location";
+                    let city = geoData.city || geoData.locality || "Your Location";
                     let country = geoData.countryName || "";
-                    
-                    // --- THE INTERCEPTOR ---
-                    // Overrides the Wi-Fi IP routing if it defaults to Lahore
-                    if (city.toLowerCase().includes("lahore")) {
-                        console.log("Intercepted Lahore IP routing. Defaulting to Garh Maharaja.");
-                        return fetchWeather(
-                            localCities["garh maharaja"].lat, 
-                            localCities["garh maharaja"].lon, 
-                            "Garh Maharaja", 
-                            "Pakistan"
-                        );
-                    }
                     
                     fetchWeather(lat, lon, city, country);
                 } catch (err) {
+                    // If the name fetch fails, still show weather for the coordinates
                     fetchWeather(lat, lon, "Your Location", "");
                 }
             },
             (err) => {
-                fetchWeather(localCities["garh maharaja"].lat, localCities["garh maharaja"].lon, "Garh Maharaja", "Pakistan");
+                // PROPER FIX: Do not guess. Tell the user to search manually.
+                showError("Could not auto-detect location. Please search for your city manually.");
             },
             { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 } 
         );
     } else {
-        fetchWeather(localCities["garh maharaja"].lat, localCities["garh maharaja"].lon, "Garh Maharaja", "Pakistan");
+        showError("Geolocation is not supported by your browser. Please search manually.");
     }
 }
 
@@ -78,12 +69,15 @@ async function fetchCoordinates(city) {
     loading.classList.remove("hidden");
 
     const query = city.toLowerCase();
+    
+    // Check local dictionary first
     if (localCities[query]) {
         const { lat, lon, name, country } = localCities[query];
         return fetchWeather(lat, lon, name, country);
     }
 
     try {
+        // Use OpenStreetMap for broad global search
         const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`);
         const geoData = await geoRes.json();
 
