@@ -95,7 +95,6 @@ async function fetchCoordinates(city) {
 
 async function fetchWeather(lat, lon, name, country) {
     try {
-        // --- FIX 1: Added sunrise and sunset back to the API request ---
         const url = `https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&current=temperature_2m,relative_humidity_2m,is_day,weather_code,surface_pressure,wind_speed_10m&hourly=temperature_2m,weather_code&daily=weather_code,temperature_2m_max,temperature_2m_min,sunrise,sunset,windspeed_10m_max,precipitation_probability_max,uv_index_max&timezone=auto`;
         
         const weatherRes = await fetch(url);
@@ -117,10 +116,12 @@ function updateUI(data, name, country) {
     const daily = data.daily;
     const hourly = data.hourly;
 
+    // --- NEW: Trigger the Dynamic Background and Auto-Dark Mode ---
+    setDynamicBackground(current.weather_code, current.is_day);
+
     document.getElementById("location").textContent = country ? `${name}, ${country}` : name;
     document.getElementById("temperature").textContent = `${Math.round(current.temperature_2m)}°C`;
     
-    // Restore Sunrise and Sunset formatting
     if (daily.sunrise && daily.sunset) {
         const sunriseObj = new Date(daily.sunrise[0]);
         const sunsetObj = new Date(daily.sunset[0]);
@@ -143,11 +144,9 @@ function updateUI(data, name, country) {
     
     document.getElementById("uv").textContent = daily.uv_index_max ? daily.uv_index_max[0] : "0";
 
-    // --- FIX 2: Loop only 12 times instead of 24 for the hourly forecast ---
     hourlyContainer.innerHTML = ""; 
     const currentHourIdx = new Date().getHours();
     for (let i = currentHourIdx; i < currentHourIdx + 12; i++) {
-        // Prevent array out-of-bounds if near the end of the 24h data
         if (!hourly.time[i]) break; 
 
         const time = new Date(hourly.time[i]);
@@ -261,4 +260,34 @@ function getWeatherCondition(code, isDay) {
     if (code >= 85 && code <= 86) return { icon: "❄️", text: "Snow showers" };
     if (code >= 95 && code <= 99) return { icon: "⛈️", text: "Thunderstorm" };
     return { icon: "☁️", text: "Overcast" };
+}
+
+// --- NEW: Dynamic Background & Auto Dark Mode Logic ---
+function setDynamicBackground(code, isDay) {
+    let weatherType = "clouds"; // Default fallback
+
+    // Map weather codes to our CSS themes
+    if (code === 0) weatherType = "clear";
+    else if (code >= 1 && code <= 3) weatherType = "clouds";
+    else if (code === 45 || code === 48) weatherType = "fog";
+    else if (code >= 51 && code <= 67) weatherType = "rain";
+    else if (code >= 71 && code <= 77) weatherType = "snow";
+    else if (code >= 80 && code <= 82) weatherType = "rain";
+    else if (code >= 85 && code <= 86) weatherType = "snow";
+    else if (code >= 95 && code <= 99) weatherType = "thunder";
+
+    // Update the DOM so CSS can react
+    document.body.setAttribute("data-weather", weatherType);
+
+    // Auto-Toggle Dark Mode based on Day/Night!
+    const isDarkMode = document.body.classList.contains("dark-mode");
+    const themeSwitch = document.getElementById("themeSwitch");
+    
+    if (isDay === 0 && !isDarkMode) {
+        document.body.classList.add("dark-mode");
+        themeSwitch.checked = true;
+    } else if (isDay === 1 && isDarkMode) {
+        document.body.classList.remove("dark-mode");
+        themeSwitch.checked = false;
+    }
 }
