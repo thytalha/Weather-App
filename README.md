@@ -38,6 +38,13 @@ Welcome to the **Weather Dashboard**, a sleek web application designed to give y
 * **APIs:**
     * [Open-Meteo](https://open-meteo.com/) for weather and UV data.
     * [BigDataCloud](https://www.bigdatacloud.com/) for reverse geocoding.
+    
+## Project Status
+- [x] Basic Weather Fetching
+- [x] Vercel Deployment
+- [X] 5-Day Forecast
+
+*Developed by Talha*
 
 
 ## 👨‍💻 Author
