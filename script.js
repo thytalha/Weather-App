@@ -82,7 +82,7 @@ async function fetchCoordinates(city) {
 
 async function fetchWeather(lat, lon, name, country) {
     try {
-        // WeatherAPI forecast endpoint (gives current + 7 days + hourly)
+        // Fetching 2 days to ensure we have enough hours for the 12-hour forecast
         const url = `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${lat},${lon}&days=7&aqi=no&alerts=no`;
         
         const weatherRes = await fetch(url);
@@ -99,7 +99,7 @@ async function fetchWeather(lat, lon, name, country) {
 function updateUI(data, name, country) {
     const current = data.current;
     const forecastDays = data.forecast.forecastday;
-    const todayForecast = forecastDays[0];
+    const todayAstro = forecastDays[0].astro;
 
     // Trigger Dynamic Background
     setDynamicBackground(current.condition.code, current.is_day);
@@ -107,8 +107,8 @@ function updateUI(data, name, country) {
     document.getElementById("location").textContent = `${data.location.name}, ${data.location.country}`;
     document.getElementById("temperature").textContent = `${Math.round(current.temp_c)}°C`;
     
-    document.getElementById("sunrise").textContent = todayForecast.astro.sunrise;
-    document.getElementById("sunset").textContent = todayForecast.astro.sunset;
+    document.getElementById("sunrise").textContent = todayAstro.sunrise;
+    document.getElementById("sunset").textContent = todayAstro.sunset;
 
     const conditionInfo = getWeatherCondition(current.condition.code, current.is_day);
     document.getElementById("weatherIcon").textContent = conditionInfo.icon;
@@ -119,16 +119,21 @@ function updateUI(data, name, country) {
     document.getElementById("pressure").textContent = `${(current.pressure_mb * 0.02953).toFixed(2)} Inch`;
     document.getElementById("uv").textContent = current.uv;
 
-    // 12-Hour Forecast Logic
+    // --- FIXED 12-Hour Forecast Logic ---
     hourlyContainer.innerHTML = ""; 
-    const allHours = todayForecast.hour;
-    const currentHour = new Date().getHours();
     
-    for (let i = currentHour; i < currentHour + 12; i++) {
-        // If we run out of hours today, we stop (for simplicity)
-        if (!allHours[i]) break; 
+    // Combine hours from today and tomorrow to handle the "midnight wrap"
+    const todayHours = forecastDays[0].hour;
+    const tomorrowHours = forecastDays[1].hour;
+    const combinedHours = [...todayHours, ...tomorrowHours];
+    
+    const currentHourIdx = new Date().getHours();
+    
+    // Loop exactly 12 times from the current hour
+    for (let i = currentHourIdx; i < currentHourIdx + 12; i++) {
+        const hourData = combinedHours[i];
+        if (!hourData) break; 
 
-        const hourData = allHours[i];
         const time = new Date(hourData.time);
         const displayTime = time.toLocaleTimeString([], { hour: 'numeric' });
         const condition = getWeatherCondition(hourData.condition.code, hourData.is_day);
@@ -191,12 +196,10 @@ function hideAll() {
     dashboard.classList.add("hidden");
 }
 
-// Updated mapping for WeatherAPI condition codes
 function getWeatherCondition(code, isDay) {
     const sunIcon = isDay ? "☀️" : "🌙";
     const cloudIcon = isDay ? "⛅" : "☁️";
 
-    // Codes based on https://www.weatherapi.com/docs/weather_conditions.json
     if (code === 1000) return { icon: sunIcon, text: "Clear" };
     if ([1003, 1006, 1009].includes(code)) return { icon: cloudIcon, text: "Cloudy" };
     if ([1030, 1135, 1147].includes(code)) return { icon: "🌫️", text: "Fog" };
@@ -219,7 +222,6 @@ function setDynamicBackground(code, isDay) {
 
     document.body.setAttribute("data-weather", weatherType);
 
-    // Auto-Toggle Dark Mode based on is_day (1 for day, 0 for night)
     const isDarkMode = document.body.classList.contains("dark-mode");
     const themeSwitch = document.getElementById("themeSwitch");
     
