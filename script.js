@@ -10,11 +10,9 @@ const currentLocBtn = document.getElementById("currentLocBtn");
 const dashboard = document.getElementById("weatherDashboard");
 const loading = document.getElementById("loading");
 const errorDiv = document.getElementById("error");
-
 const forecastContainer = document.getElementById("forecastContainer");
 const hourlyContainer = document.getElementById("hourlyContainer");
 
-// Custom Dictionary for local abbreviations
 const localCities = {
     "garh more": { lat: 30.846, lon: 71.845, name: "Garh More", country: "Pakistan" },
     "garh maharaja": { lat: 30.833, lon: 71.905, name: "Garh Maharaja", country: "Pakistan" },
@@ -22,29 +20,18 @@ const localCities = {
 };
 
 cityInput.addEventListener("keypress", (e) => {
-    if (e.key === "Enter") {
-        fetchCoordinates(cityInput.value.trim());
-    }
+    if (e.key === "Enter") fetchCoordinates(cityInput.value.trim());
 });
 
 function loadUserLocation() {
     hideAll();
     loading.classList.remove("hidden");
-
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
-            async (position) => {
-                const lat = position.coords.latitude;
-                const lon = position.coords.longitude;
-                fetchWeather(lat, lon, "Your Location", "");
-            },
-            (err) => {
-                showError("Could not auto-detect location. Please search manually.");
-            },
-            { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 } 
+            (pos) => fetchWeather(pos.coords.latitude, pos.coords.longitude, "Your Location", ""),
+            () => showError("Please search for a city manually."),
+            { enableHighAccuracy: true, timeout: 10000 }
         );
-    } else {
-        showError("Geolocation is not supported by your browser.");
     }
 }
 
@@ -55,63 +42,40 @@ async function fetchCoordinates(city) {
     if (!city) return;
     hideAll();
     loading.classList.remove("hidden");
-
     const query = city.toLowerCase();
     if (localCities[query]) {
-        const { lat, lon, name, country } = localCities[query];
-        return fetchWeather(lat, lon, name, country);
+        return fetchWeather(localCities[query].lat, localCities[query].lon, localCities[query].name, localCities[query].country);
     }
-
     try {
-        const geoRes = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`);
-        const geoData = await geoRes.json();
-
-        if (!geoData || geoData.length === 0) throw new Error("City not found.");
-
-        const latitude = parseFloat(geoData[0].lat);
-        const longitude = parseFloat(geoData[0].lon);
-        const fullName = geoData[0].display_name.split(",");
-        const name = fullName[0].trim();
-        const country = fullName[fullName.length - 1].trim();
-
-        fetchWeather(latitude, longitude, name, country);
-    } catch (err) {
-        showError(err.message);
-    }
+        const res = await fetch(`https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(city)}&format=json&limit=1`);
+        const data = await res.json();
+        if (!data.length) throw new Error("City not found.");
+        const parts = data[0].display_name.split(",");
+        fetchWeather(parseFloat(data[0].lat), parseFloat(data[0].lon), parts[0], parts[parts.length - 1]);
+    } catch (err) { showError(err.message); }
 }
 
 async function fetchWeather(lat, lon, name, country) {
     try {
-        // Fetching 2 days to ensure we have enough hours for the 12-hour forecast
-        const url = `https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${lat},${lon}&days=7&aqi=no&alerts=no`;
-        
-        const weatherRes = await fetch(url);
-        if (!weatherRes.ok) throw new Error(`API Error: ${weatherRes.status}`);
-        
-        const data = await weatherRes.json();
-        updateUI(data, name, country);
-    } catch (err) {
-        console.error("Fetch Error:", err);
-        showError("Failed to fetch weather data.");
-    }
+        const res = await fetch(`https://api.weatherapi.com/v1/forecast.json?key=${API_KEY}&q=${lat},${lon}&days=7&aqi=no`);
+        if (!res.ok) throw new Error("Weather service unavailable.");
+        updateUI(await res.json(), name, country);
+    } catch (err) { showError(err.message); }
 }
 
 function updateUI(data, name, country) {
     const current = data.current;
     const forecastDays = data.forecast.forecastday;
-    const todayAstro = forecastDays[0].astro;
 
-    // Trigger Dynamic Background
     setDynamicBackground(current.condition.code, current.is_day);
 
     document.getElementById("location").textContent = `${data.location.name}, ${data.location.country}`;
     document.getElementById("temperature").textContent = `${Math.round(current.temp_c)}°C`;
-    
-    document.getElementById("sunrise").textContent = todayAstro.sunrise;
-    document.getElementById("sunset").textContent = todayAstro.sunset;
+    document.getElementById("sunrise").textContent = forecastDays[0].astro.sunrise;
+    document.getElementById("sunset").textContent = forecastDays[0].astro.sunset;
 
-    const conditionInfo = getWeatherCondition(current.condition.code, current.is_day);
-    document.getElementById("weatherIcon").textContent = conditionInfo.icon;
+    const condition = getWeatherCondition(current.condition.code, current.is_day);
+    document.getElementById("weatherIcon").textContent = condition.icon;
     document.getElementById("condition").textContent = current.condition.text;
 
     document.getElementById("humidity").textContent = `${current.humidity}%`;
@@ -119,117 +83,67 @@ function updateUI(data, name, country) {
     document.getElementById("pressure").textContent = `${(current.pressure_mb * 0.02953).toFixed(2)} Inch`;
     document.getElementById("uv").textContent = current.uv;
 
-    // --- FIXED 12-Hour Forecast Logic ---
+    // 12-Hour Logic
     hourlyContainer.innerHTML = ""; 
-    
-    // Combine hours from today and tomorrow to handle the "midnight wrap"
-    const todayHours = forecastDays[0].hour;
-    const tomorrowHours = forecastDays[1].hour;
-    const combinedHours = [...todayHours, ...tomorrowHours];
-    
-    const currentHourIdx = new Date().getHours();
-    
-    // Loop exactly 12 times from the current hour
-    for (let i = currentHourIdx; i < currentHourIdx + 12; i++) {
-        const hourData = combinedHours[i];
-        if (!hourData) break; 
-
-        const time = new Date(hourData.time);
-        const displayTime = time.toLocaleTimeString([], { hour: 'numeric' });
-        const condition = getWeatherCondition(hourData.condition.code, hourData.is_day);
-
-        const hourCard = document.createElement("div");
-        hourCard.className = "hourly-card";
-        hourCard.innerHTML = `
-            <span class="time">${displayTime}</span>
-            <span class="icon">${condition.icon}</span>
-            <span class="temp">${Math.round(hourData.temp_c)}°C</span>
-        `;
-        hourlyContainer.appendChild(hourCard);
+    const combinedHours = [...forecastDays[0].hour, ...forecastDays[1].hour];
+    const now = new Date().getHours();
+    for (let i = now; i < now + 12; i++) {
+        const h = combinedHours[i];
+        const hCond = getWeatherCondition(h.condition.code, h.is_day);
+        const div = document.createElement("div");
+        div.className = "hourly-card";
+        div.innerHTML = `<span class="time">${new Date(h.time).toLocaleTimeString([], { hour: 'numeric' })}</span>
+                         <span class="icon">${hCond.icon}</span>
+                         <span class="temp">${Math.round(h.temp_c)}°C</span>`;
+        hourlyContainer.appendChild(div);
     }
 
-    // 7-Day Forecast Logic
+    // 7-Day Logic
     forecastContainer.innerHTML = ""; 
     forecastDays.forEach((day, index) => {
-        const dateObj = new Date(day.date);
-        const dayName = index === 0 ? "Today" : dateObj.toLocaleDateString('en-US', { weekday: 'long' });
-        const formattedDate = day.date.split('-').reverse().join('-');
-        
-        const condition = getWeatherCondition(day.day.condition.code, 1);
-        
-        const card = document.createElement("div");
-        card.className = "forecast-card";
-        card.innerHTML = `
-            <div class="card-header">
-                <span class="day-name">${dayName}</span>
-                <span class="full-date">${formattedDate}</span>
-            </div>
-            <div class="card-status">
-                <span class="status-icon large-icon">${condition.icon}</span>
-                <span class="status-text condition-text">${day.day.condition.text}</span>
-            </div>
+        const cond = getWeatherCondition(day.day.condition.code, 1);
+        const div = document.createElement("div");
+        div.className = "forecast-card";
+        div.innerHTML = `
+            <div class="card-header"><span class="day-name">${index === 0 ? "Today" : new Date(day.date).toLocaleDateString('en-US', { weekday: 'long' })}</span></div>
+            <div class="card-status"><span class="large-icon">${cond.icon}</span><p>${day.day.condition.text}</p></div>
             <div class="card-metrics-footer">
                 <div class="footer-item"><span class="label">Max</span><span class="value">${Math.round(day.day.maxtemp_c)}°C</span></div>
-                <div class="footer-item"><span class="label">Avg</span><span class="value">${Math.round(day.day.avgtemp_c)}°C</span></div>
-                <div class="footer-item"><span class="label">Min</span><span class="value">${Math.round(day.day.mintemp_c)}°C</span></div>
-                <div class="footer-item"><span class="label">Wind</span><span class="value">${day.day.maxwind_kph}kph</span></div>
                 <div class="footer-item"><span class="label">Rain</span><span class="value">${day.day.daily_chance_of_rain}%</span></div>
-                <div class="footer-item"><span class="label">UV</span><span class="value">${day.day.uv}</span></div>
-            </div>
-        `;
-        forecastContainer.appendChild(card);
+                <div class="footer-item"><span class="label">Min</span><span class="value">${Math.round(day.day.mintemp_c)}°C</span></div>
+            </div>`;
+        forecastContainer.appendChild(div);
     });
 
     loading.classList.add("hidden");
     dashboard.classList.remove("hidden");
 }
 
-function showError(msg) {
-    loading.classList.add("hidden");
-    dashboard.classList.add("hidden");
-    errorDiv.textContent = msg;
-    errorDiv.classList.remove("hidden");
-}
-
-function hideAll() {
-    errorDiv.classList.add("hidden");
-    dashboard.classList.add("hidden");
-}
-
 function getWeatherCondition(code, isDay) {
-    const sunIcon = isDay ? "☀️" : "🌙";
-    const cloudIcon = isDay ? "⛅" : "☁️";
-
-    if (code === 1000) return { icon: sunIcon, text: "Clear" };
-    if ([1003, 1006, 1009].includes(code)) return { icon: cloudIcon, text: "Cloudy" };
-    if ([1030, 1135, 1147].includes(code)) return { icon: "🌫️", text: "Fog" };
+    const sun = isDay ? "☀️" : "🌙";
+    if (code === 1000) return { icon: sun, text: "Clear" };
+    if ([1003, 1006, 1009].includes(code)) return { icon: isDay ? "⛅" : "☁️", text: "Cloudy" };
     if ([1063, 1180, 1183, 1186, 1189, 1192, 1195, 1240, 1243, 1246].includes(code)) return { icon: "🌧️", text: "Rain" };
-    if ([1066, 1114, 1117, 1210, 1213, 1216, 1219, 1222, 1225, 1255, 1258].includes(code)) return { icon: "❄️", text: "Snow" };
-    if ([1087, 1273, 1276, 1279, 1282].includes(code)) return { icon: "⛈️", text: "Thunderstorm" };
-    
-    return { icon: "☁️", text: "Overcast" };
+    if ([1087, 1273, 1276, 1279, 1282].includes(code)) return { icon: "⛈️", text: "Thunder" };
+    return { icon: "🌥️", text: "Overcast" };
 }
 
 function setDynamicBackground(code, isDay) {
-    let weatherType = "clouds"; 
+    let type = "clouds"; 
+    if (code === 1000) type = "clear";
+    else if ([1063, 1180, 1240].includes(code)) type = "rain";
+    else if ([1087, 1273].includes(code)) type = "thunder";
+    document.body.setAttribute("data-weather", type);
 
-    if (code === 1000) weatherType = "clear";
-    else if ([1003, 1006, 1009].includes(code)) weatherType = "clouds";
-    else if ([1030, 1135, 1147].includes(code)) weatherType = "fog";
-    else if ([1063, 1180, 1240, 1243, 1246].includes(code)) weatherType = "rain";
-    else if (code >= 1066 && code <= 1258) weatherType = "snow";
-    else if ([1087, 1273, 1276].includes(code)) weatherType = "thunder";
-
-    document.body.setAttribute("data-weather", weatherType);
-
-    const isDarkMode = document.body.classList.contains("dark-mode");
-    const themeSwitch = document.getElementById("themeSwitch");
-    
-    if (isDay === 0 && !isDarkMode) {
+    // Force theme based on Day/Night
+    if (isDay === 0) {
         document.body.classList.add("dark-mode");
         themeSwitch.checked = true;
-    } else if (isDay === 1 && isDarkMode) {
+    } else {
         document.body.classList.remove("dark-mode");
         themeSwitch.checked = false;
     }
 }
+
+function showError(msg) { loading.classList.add("hidden"); errorDiv.textContent = msg; errorDiv.classList.remove("hidden"); }
+function hideAll() { errorDiv.classList.add("hidden"); dashboard.classList.add("hidden"); }
