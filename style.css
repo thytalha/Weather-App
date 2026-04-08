@@ -259,3 +259,29 @@ body.dark-mode[data-weather="thunder"] { background-image: linear-gradient(-45de
     .hourly-container { grid-template-columns: repeat(2, 1fr); }
     .forecast-container { grid-template-columns: 1fr; }
 }
+
+/* ==========================================================
+   --- FOOTER ---
+   ========================================================== */
+footer {
+    background-color: var(--card-bg); /* Matches your theme cards */
+    color: var(--text-color); /* Adapts to light/dark mode */
+    text-align: center;
+    padding: 25px 20px;
+    margin-top: 60px; /* Gives space from the 7-day forecast */
+    border-radius: 20px 20px 0 0; /* Rounds the top corners nicely */
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.05); /* Soft shadow on top */
+    font-size: 1rem;
+    width: 100%;
+    transition: background 0.5s ease, color 0.3s ease;
+}
+
+footer p {
+    margin: 0;
+    font-weight: 500;
+}
+
+/* Optional: Slight color adjustment for dark mode to match your shadows */
+body.dark-mode footer {
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
+}

@@ -147,3 +147,9 @@ function setDynamicBackground(code, isDay) {
 
 function showError(msg) { loading.classList.add("hidden"); errorDiv.textContent = msg; errorDiv.classList.remove("hidden"); }
 function hideAll() { errorDiv.classList.add("hidden"); dashboard.classList.add("hidden"); }
+
+// --- FOOTER DYNAMIC YEAR ---
+const yearSpan = document.getElementById("currentYear");
+if (yearSpan) {
+    yearSpan.textContent = new Date().getFullYear();
+}
