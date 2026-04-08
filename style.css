@@ -49,7 +49,6 @@ body {
     margin-bottom: 20px;
 }
 
-/* UPDATED: Added more margin to push titles away from cards above */
 .section-subtitle {
     color: var(--title-color);
     text-align: center;
@@ -115,10 +114,10 @@ body {
 .forecast-row {
     background-color: var(--card-bg);
     border-radius: 24px;
-    padding: 50px 40px; /* Increased top/bottom padding */
+    padding: 50px 40px; 
     box-shadow: var(--card-shadow);
     display: grid;
-    grid-template-columns: 1fr 1.5fr 1fr;
+    grid-template-columns: 1fr 1fr 1fr; 
     align-items: center;
     gap: 30px;
     max-width: 1100px;
@@ -131,8 +130,7 @@ body {
 
 .icon-col { text-align: center; }
 
-/* CHANGED ONLY THIS LINE FROM 5rem TO 7rem */
-.large-icon { font-size: 7rem; display: block; }
+.large-icon { font-size: 9.5rem; display: block; margin-bottom: -10px; }
 
 .condition-text { font-size: 1.3rem; font-weight: 600; margin-top: 15px; }
 
@@ -143,7 +141,7 @@ body {
 }
 .metric {
     background: var(--secondary-bg);
-    padding: 20px 15px; /* Increased metric card height */
+    padding: 20px 15px; 
     border-radius: 18px;
     text-align: center;
 }
@@ -164,8 +162,8 @@ body {
 
 .hourly-card {
     background-color: var(--card-bg);
-    padding: 25px 15px; /* Increased vertical padding for more height */
-    min-height: 160px;   /* Forced minimum height */
+    padding: 25px 15px; 
+    min-height: 160px;  
     border-radius: 20px;
     text-align: center;
     box-shadow: var(--card-shadow);
@@ -175,23 +173,20 @@ body {
     transition: transform 0.2s ease;
 }
 
-/* Make the Time (10 PM, etc.) larger and bolder */
 .hourly-card .time { 
     font-size: 1.1rem; 
     color: var(--label-color); 
     font-weight: 700; 
 }
 
-/* Make the Emoji icon much bigger */
 .hourly-card .icon {
-    font-size: 2.8rem; /* Increased from ~2rem */
+    font-size: 2.8rem; 
     margin: 10px 0;
 }
 
-/* Make the Temperature (17°C, etc.) stand out */
 .hourly-card .temp { 
     font-weight: 800; 
-    font-size: 1.5rem; /* Large enough to read at a glance */
+    font-size: 1.5rem; 
     color: var(--text-color);
 }
 /* ==========================================================
@@ -213,7 +208,7 @@ body {
     display: flex;
     flex-direction: column;
     text-align: center;
-    min-height: 380px; /* Increased height of the 7-day cards */
+    min-height: 380px; 
     width: 100%;
 }
 
@@ -225,7 +220,7 @@ body {
     background-color: var(--secondary-bg);
     display: grid;
     grid-template-columns: repeat(3, 1fr);
-    padding: 20px 10px; /* More padding at bottom */
+    padding: 20px 10px; 
     gap: 10px;
 }
 @keyframes gradientBG {
@@ -264,13 +259,13 @@ body.dark-mode[data-weather="thunder"] { background-image: linear-gradient(-45de
    --- FOOTER ---
    ========================================================== */
 footer {
-    background-color: var(--card-bg); /* Matches your theme cards */
-    color: var(--text-color); /* Adapts to light/dark mode */
+    background-color: var(--card-bg); 
+    color: var(--text-color); 
     text-align: center;
     padding: 25px 20px;
-    margin-top: 60px; /* Gives space from the 7-day forecast */
-    border-radius: 20px 20px 0 0; /* Rounds the top corners nicely */
-    box-shadow: 0 -5px 20px rgba(0,0,0,0.05); /* Soft shadow on top */
+    margin-top: 60px; 
+    border-radius: 20px 20px 0 0; 
+    box-shadow: 0 -5px 20px rgba(0,0,0,0.05); 
     font-size: 1rem;
     width: 100%;
     transition: background 0.5s ease, color 0.3s ease;
@@ -281,7 +276,6 @@ footer p {
     font-weight: 500;
 }
 
-/* Optional: Slight color adjustment for dark mode to match your shadows */
 body.dark-mode footer {
     box-shadow: 0 -5px 20px rgba(0,0,0,0.2);
 }
