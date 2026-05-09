@@ -15,51 +15,48 @@
 
 ---
 
-## 🚀 Overview
+# 🌤️ Dynamic Weather Dashboard
 
-Welcome to the **Weather Dashboard**, a sleek web application designed to give you precise, real-time weather data at a glance. Built with a focus on clean UI and seamless performance, this project fetches live data from the **Open-Meteo API** to ensure you know exactly what’s happening outside—whether you're at home or searching for a city across the globe.
+A responsive, feature-rich weather application built with vanilla web technologies. This dashboard provides real-time weather metrics, detailed forecasts, and a highly interactive UI that dynamically adapts its theme and background based on current weather conditions and time of day. 
 
-## ✨ Key Features
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
 
-* 🌍 **Smart Geolocation:**
-    * The app automatically detects your current coordinates upon loading to provide instant local weather.
-* 🔍 **Global Search:**
-    * Looking to travel? Type any city name into the search bar to get an instant forecast for that location.
-* 🌓 **Dynamic Theme Toggle:**
-    * Switch between **Light Mode** and **Dark Mode** with a single click. The UI is designed to be easy on the eyes, no matter the time of day.
-* 📊 **Deep-Dive Metrics:**
-    * Go beyond just the temperature. Get detailed data on **Humidity**, **Wind Speed**, **Surface Pressure**, and the **UV Index**.
-* 🌅 **Astro Data:**
-    * Stay synced with the sun. The dashboard provides accurate **Sunrise** and **Sunset** timings based on the local timezone.
+## ✨ Features
 
-## 🛠️ Technical Stack
+* **Real-Time Weather Metrics:** Displays accurate temperature, humidity, wind speed, atmospheric pressure, UV index, and sunrise/sunset times.
+* **Granular Forecasts:** Includes a scrolling 12-hour forecast and a comprehensive 7-day outlook with max/min temps and rain probability.
+* **Smart Location Detection:** * Uses the browser's Geolocation API to fetch local weather automatically on load.
+  * Includes a search bar powered by the OpenStreetMap Nominatim API for accurate city-to-coordinate geocoding.
+  * Built-in rapid routing for specific local cities (e.g., Garh More, Garh Maharaja).
+* **Dynamic UI & Theming:**
+  * **Auto-Theming:** Automatically switches between Light and Dark mode based on the `is_day` data from the API. Manual toggle also available.
+  * **Animated Backgrounds:** The CSS background runs a smooth gradient animation that shifts colors based on weather conditions (Clear, Clouds, Rain, Thunder).
+* **Responsive Design:** Utilizes CSS Grid and Flexbox to ensure seamless scaling from desktop down to mobile viewports.
 
-* **Frontend:** Vanilla HTML5, CSS3 (using CSS Variables for themes), and JavaScript (ES6+).
-* **APIs:**
-    * [Open-Meteo](https://open-meteo.com/) for weather and UV data.
-    * [BigDataCloud](https://www.bigdatacloud.com/) for reverse geocoding.
-    
-## Project Status
-- [x] Basic Weather Fetching
-- [x] Vercel Deployment
-- [X] 5-Day Forecast
+## 🛠️ Tech Stack & APIs
 
-*Developed by Talha*
+* **Frontend:** HTML5, CSS3 (CSS Variables, Grid, Animations), Vanilla JavaScript (ES6+).
+* **Weather Data:** [WeatherAPI](https://www.weatherapi.com/) (`v1/forecast.json`).
+* **Geocoding:** [OpenStreetMap Nominatim API](https://nominatim.org/).
 
+# 🚀 Setup, Deployment & License
 
-## 👨‍💻 Author
-### Created by [Talha Pasha](https://github.com/thytalha)
+## Clone the repository:
+```bash
+git clone [https://github.com/thytalha/weather-dashboard.git](https://github.com/thytalha/weather-dashboard.git)
+cd weather-dashboard
+```
 
----
+## Configure the API Key & Run:
 
-## 📜 Status & Usage
+Open `script.js` and locate the `API_KEY` constant at the top of the file to insert your valid WeatherAPI key. Since this is a vanilla frontend application, you can simply open `index.html` in your web browser to run it. For the best development experience, use a local server like VS Code's "Live Server" extension.
 
-> [!IMPORTANT]
-> **Project Status:** In Progress
+## 🌐 Deployment:
 
-This project is currently **In Progress**. I am actively working on refining the UI and potentially adding a **7-day extended forecast** feature in the future.
+This app is entirely static and client-side, making it perfect for rapid deployment on platforms like **Vercel**, Netlify, or GitHub Pages. Simply link your repository to your preferred hosting platform and deploy the root directory.
 
-### How to Use
-* **Explore:** Feel free to dive into the code to see how the Fetch API handles real-time weather data.
-* **Contribute:** Fork the repository or suggest new features via issues/pull requests!
-* **Remix:** Whether you're learning or just need a solid weather template, you are welcome to use and modify this project.
+## 📄 License:
+
+&copy; 2026 Talha. All Rights Reserved.
