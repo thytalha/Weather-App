@@ -572,7 +572,11 @@ input:checked + .toggle-track::after { transform: translateX(22px); }
     gap: 24px;
 }
 
-.temp-display {}
+.temp-display {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
 
 .temperature-value {
     font-size: 5.5rem;
