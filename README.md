@@ -11,7 +11,7 @@
 </div>
 
 **_Sample Screenshot of the Dashboard 👇👇_**
-![Weather Dashboard Screenshot](sample.png)
+![Weather Dashboard Screenshot](assets/images/sample.png)
 
 ---
 
