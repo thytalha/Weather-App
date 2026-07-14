@@ -35,6 +35,63 @@ A responsive, feature-rich weather application built with vanilla web technologi
   - **Animated Backgrounds:** The CSS background runs a smooth gradient animation that shifts colors based on weather conditions (Clear, Clouds, Rain, Thunder).
 - **Responsive Design:** Utilizes CSS Grid and Flexbox to ensure seamless scaling from desktop down to mobile viewports.
 
+## 🏗️ Professional Modular Architecture
+
+To maintain enterprise-grade separation of concerns and maintainability, the project is structured into modular domain-specific files without relying on complex build steps or bundlers:
+
+```
+Weather-App/
+├── index.html                  # Main application dashboard & layout
+├── css/
+│   ├── style.css               # Main CSS hub (@importing all base, layout & component modules)
+│   ├── base/                   # Core tokens, resets, animations, responsive design
+│   │   ├── variables.css       # Design system tokens & theme color definitions
+│   │   ├── reset.css           # Modern box-sizing reset & base element typography
+│   │   ├── animations.css      # Keyframe animations & UI micro-interactions
+│   │   ├── responsive.css      # Tablet & mobile media queries
+│   │   └── accessibility.css   # Focus states & custom scrollbar styling
+│   ├── layout/                 # Structural page layout components
+│   │   ├── main.css            # Main container, loading spinner & error card layout
+│   │   └── footer.css          # Site footer styling
+│   └── components/             # UI widget modules
+│       ├── canvas.css          # Weather canvas container
+│       ├── aurora.css          # Aurora borealis background animation
+│       ├── glass-card.css      # Glassmorphism surface & blur effects
+│       ├── alert-banner.css    # Emergency weather alert banner
+│       ├── navigation.css      # Site header, autocomplete search & toggles
+│       ├── current-weather.css # Primary hero temperature & condition display
+│       ├── metrics-grid.css    # Drag-and-drop weather metrics grid
+│       ├── aqi.css             # US EPA Air Quality Index dial & pollutant bars
+│       ├── chart.css           # 24-hour interactive temperature & rain SVG chart
+│       ├── hourly-cards.css    # 12-hour scrolling forecast cards
+│       ├── forecast-cards.css  # 3-day weekly forecast cards
+│       ├── soundscape.css      # Web Audio API soundscape control panel
+│       └── parallax-tilt.css   # 3D mouse tracking tilt & specular glint
+├── js/
+│   ├── config.js               # API keys, EPA tables & local city coordinates
+│   ├── state.js                # Global runtime state & DOM element registry
+│   ├── ui-helpers.js           # Ripple button effects, SEO dynamic meta & utilities
+│   ├── units.js                # Metric/Imperial unit conversion logic (°C/°F, km/h/mph)
+│   ├── particles.js            # Canvas procedural weather particle engine
+│   ├── soundscape.js           # Web Audio API procedural ambient weather audio engine
+│   ├── chart.js                # Interactive 24-hour SVG temperature forecast chart
+│   ├── theme.js                # Dark/Light theme manager with localStorage persistence
+│   ├── search.js               # Nominatim OpenStreetMap autocomplete search & query handlers
+│   ├── api.js                  # WeatherAPI endpoint communication & geolocation fetchers
+│   ├── render.js               # UI binding & card renderer functions
+│   ├── drag-drop.js            # Drag-and-drop metrics customization grid
+│   ├── parallax-tilt.js        # 3D interactive mouse tracking parallax & specular glint
+│   └── app.js                  # DOMContentLoaded initializer & query parameter parser
+├── assets/
+│   ├── favicon_new.png         # High-resolution site icon
+│   └── sample.png              # Preview screenshot for social sharing
+├── .gitignore                  # Git ignore rules for node_modules, logs, and OS files
+├── .editorconfig               # Cross-IDE code formatting consistency rules
+├── CONTRIBUTING.md             # Contribution guidelines and workflow
+├── CHANGELOG.md                # Semantic versioning history
+└── LICENSE                     # MIT Open Source License
+```
+
 ## 🛠️ Tech Stack & APIs
 
 - **Frontend:** HTML5, CSS3 (CSS Variables, Grid, Animations), Vanilla JavaScript (ES6+).

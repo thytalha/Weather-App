@@ -1,0 +1,35 @@
+/* ==========================================================
+   26. 3D CARD PARALLAX TILT & SPECULAR GLINT
+   ========================================================== */
+.glass-card,
+.glass-metric,
+.forecast-card {
+  position: relative;
+  transform-style: preserve-3d;
+  will-change: transform, box-shadow;
+}
+
+/* Specular light highlight overlay */
+.card-glint {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: radial-gradient(
+    circle 240px at var(--glint-x, 50%) var(--glint-y, 50%),
+    rgba(255, 255, 255, 0.22) 0%,
+    rgba(255, 255, 255, 0.06) 40%,
+    transparent 80%
+  );
+  opacity: var(--glint-opacity, 0);
+  transition: opacity 0.35s ease;
+  z-index: 20;
+  mix-blend-mode: overlay;
+}
+
+/* Elevate internal content slightly during 3D tilt for true depth */
+.glass-card > *,
+.glass-metric > *,
+.forecast-card > * {
+  transform: translateZ(1px);
+}

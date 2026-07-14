@@ -1,0 +1,128 @@
+/* ==========================================================
+   8. MAIN CONTENT AREA
+   ========================================================== */
+#mainContent {
+  position: relative;
+  z-index: 1;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 40px 24px 70px;
+}
+
+/* ==========================================================
+   9. LOADING STATE
+   ========================================================== */
+.loading-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 100px 20px;
+  gap: 28px;
+}
+
+.weather-spinner {
+  position: relative;
+  width: 92px;
+  height: 92px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner-sun {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: radial-gradient(circle at 35% 35%, #ffe082, #ff8f00);
+  box-shadow:
+    0 0 24px rgba(255, 193, 7, 0.65),
+    0 0 50px rgba(255, 193, 7, 0.3);
+  position: absolute;
+  z-index: 2;
+  animation: sunPulse 1.4s ease-in-out infinite alternate;
+}
+
+.spinner-ring {
+  position: absolute;
+  inset: 0;
+  border: 3px solid transparent;
+  border-top-color: var(--accent);
+  border-right-color: var(--accent-2);
+  border-radius: 50%;
+  animation: spinRing 1s linear infinite;
+  box-shadow: 0 0 14px var(--accent-glow);
+}
+
+.spinner-cloud {
+  position: absolute;
+  font-size: 1.4rem;
+  bottom: -4px;
+  right: -4px;
+  z-index: 3;
+  animation: cloudBounce 2s ease-in-out infinite alternate;
+}
+
+.loading-text {
+  font-size: 1rem;
+  color: var(--text-muted);
+  font-weight: 500;
+  letter-spacing: 0.02em;
+}
+
+.dots span {
+  display: inline-block;
+  animation: dotFade 1.4s ease-in-out infinite;
+}
+.dots span:nth-child(2) {
+  animation-delay: 0.2s;
+}
+.dots span:nth-child(3) {
+  animation-delay: 0.4s;
+}
+
+/* ==========================================================
+   10. ERROR CARD
+   ========================================================== */
+.error-card {
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.28);
+  border-radius: var(--radius-md);
+  padding: 26px 34px;
+  color: #fca5a5;
+  text-align: center;
+  font-size: 1rem;
+  font-weight: 500;
+  max-width: 520px;
+  margin: 70px auto;
+  backdrop-filter: blur(12px);
+  animation: fadeInUp 0.4s ease both;
+}
+
+/* ==========================================================
+   11. DASHBOARD
+   ========================================================== */
+.dashboard {
+  animation: fadeInUp 0.6s ease both;
+}
+
+.location-section {
+  text-align: center;
+  margin-bottom: 30px;
+  animation: fadeInUp 0.5s ease both;
+}
+
+.main-title {
+  font-size: 2.5rem;
+  font-weight: 700;
+  color: var(--title);
+  letter-spacing: -0.02em;
+  margin-bottom: 4px;
+  line-height: 1.2;
+}
+
+.update-time {
+  font-size: 0.82rem;
+  color: var(--text-muted);
+  font-weight: 400;
+}

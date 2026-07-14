@@ -1,0 +1,28 @@
+/* ==========================================================
+   19. FOOTER
+   ========================================================== */
+.site-footer {
+  position: relative;
+  z-index: 1;
+  background: var(--footer-bg);
+  border-top: 1px solid var(--footer-border);
+  backdrop-filter: blur(24px);
+  padding: 28px 24px;
+  text-align: center;
+}
+
+.footer-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.footer-copy {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+}
+.footer-tagline {
+  font-size: 0.78rem;
+  color: var(--label);
+}

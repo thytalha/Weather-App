@@ -1,0 +1,104 @@
+/* ==========================================================
+   12. CURRENT WEATHER CARD
+   ========================================================== */
+.forecast-row {
+  border-radius: var(--radius-xl);
+  padding: 44px 40px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  align-items: center;
+  gap: 30px;
+  margin-bottom: 32px;
+  animation: fadeInUp 0.6s ease 0.1s both;
+}
+
+.temp-col {
+  display: flex;
+  flex-direction: column;
+  gap: 26px;
+}
+
+.temp-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.temperature-value {
+  font-size: 5.8rem;
+  font-weight: 700;
+  color: var(--title);
+  line-height: 1;
+  letter-spacing: -0.04em;
+  transition: color 0.3s ease;
+}
+
+.feels-like {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-top: 6px;
+}
+.feels-like span {
+  color: var(--accent);
+  font-weight: 600;
+}
+
+.sun-info {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.sun-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.sun-icon {
+  font-size: 1.25rem;
+}
+.sun-label {
+  display: block;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--label);
+  font-weight: 600;
+}
+.sun-time {
+  display: block;
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.icon-col {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+.icon-col::before {
+  display: none !important;
+}
+
+.large-icon {
+  font-size: 9rem;
+  display: block;
+  line-height: 1;
+  filter: drop-shadow(0 0 24px rgba(255, 255, 255, 0.18));
+  background: transparent !important;
+}
+
+.pulse-icon {
+  animation: pulseIcon 3.5s ease-in-out infinite;
+}
+.condition-text {
+  font-size: 1.2rem;
+  font-weight: 600;
+  color: var(--text);
+  text-align: center;
+}

@@ -1,0 +1,31 @@
+/* ==========================================================
+   5. DEEP GLASSMORPHISM CARD
+   ========================================================== */
+.glass-card {
+  background: var(--card-bg);
+  backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  -webkit-backdrop-filter: blur(var(--glass-blur)) saturate(var(--glass-sat));
+  border: 1px solid var(--card-border);
+  border-top-color: var(--card-highlight);
+  border-left-color: rgba(255, 255, 255, 0.1);
+  box-shadow: var(--card-shadow);
+  position: relative;
+}
+
+/* Inner top-edge highlight via pseudo-element (volumetric look) */
+.glass-card::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 12px;
+  right: 12px;
+  height: 1px;
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(255, 255, 255, 0.22),
+    transparent
+  );
+  border-radius: 50%;
+  pointer-events: none;
+}

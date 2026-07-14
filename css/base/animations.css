@@ -1,0 +1,148 @@
+/* ==========================================================
+   20. ANIMATIONS & KEYFRAMES
+   ========================================================== */
+@keyframes fadeInUp {
+  from {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.card-animate {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.55s cubic-bezier(0.4, 0, 0.2, 1),
+    transform 0.55s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.card-animate.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+@keyframes pulseIcon {
+  0%,
+  100% {
+    transform: scale(1);
+    filter: drop-shadow(0 8px 24px rgba(0, 0, 0, 0.2));
+  }
+  50% {
+    transform: scale(1.07);
+    filter: drop-shadow(0 14px 36px rgba(79, 195, 247, 0.38));
+  }
+}
+
+@keyframes spinRing {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes sunPulse {
+  from {
+    transform: scale(0.88);
+    box-shadow: 0 0 14px rgba(255, 193, 7, 0.4);
+  }
+  to {
+    transform: scale(1.14);
+    box-shadow:
+      0 0 36px rgba(255, 193, 7, 0.78),
+      0 0 64px rgba(255, 193, 7, 0.26);
+  }
+}
+
+@keyframes cloudBounce {
+  from {
+    transform: translate(0, 0) rotate(-5deg);
+  }
+  to {
+    transform: translate(3px, -6px) rotate(5deg);
+  }
+}
+
+@keyframes dotFade {
+  0%,
+  80%,
+  100% {
+    opacity: 0;
+  }
+  40% {
+    opacity: 1;
+  }
+}
+
+@keyframes blobFloat1 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1);
+  }
+  33% {
+    transform: translate(70px, -50px) scale(1.1);
+  }
+  66% {
+    transform: translate(-30px, 35px) scale(0.95);
+  }
+}
+
+@keyframes blobFloat2 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(1) rotate(0deg);
+  }
+  50% {
+    transform: translate(-60px, 70px) scale(1.12) rotate(18deg);
+  }
+}
+
+@keyframes blobFloat3 {
+  0%,
+  100% {
+    transform: translate(0, 0) scale(0.95);
+  }
+  40% {
+    transform: translate(45px, -35px) scale(1.06);
+  }
+  70% {
+    transform: translate(-22px, 22px) scale(1);
+  }
+}
+
+@keyframes slideDown {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes rippleAnim {
+  to {
+    transform: scale(4);
+    opacity: 0;
+  }
+}
+
+@keyframes alertPulse {
+  0%,
+  100% {
+    transform: scale(1);
+    opacity: 0.6;
+  }
+  50% {
+    transform: scale(1.4);
+    opacity: 0;
+  }
+}
+
+@keyframes aqi-spin-in {
+  from {
+    stroke-dasharray: 0 377;
+  }
+}
