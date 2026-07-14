@@ -1243,6 +1243,7 @@ function animateCards() {
     document.querySelectorAll(".card-animate").forEach((card, i) => {
       setTimeout(() => card.classList.add("visible"), i * 55);
     });
+    if (typeof init3DTilt === "function") init3DTilt();
   });
 }
 
@@ -1296,6 +1297,10 @@ function setDynamicBackground(code, isDay) {
 
   document.body.setAttribute("data-weather", type);
   weatherParticles.setWeather(type, isDay === 1);
+
+  if (typeof weatherSoundscape !== "undefined" && weatherSoundscape) {
+    weatherSoundscape.syncWithWeather(type, isDay === 1);
+  }
 
   /* Sync light/dark to time of day */
   const isDark = isDay === 0;
@@ -1451,3 +1456,362 @@ if (yearEl) yearEl.textContent = new Date().getFullYear();
   const q = new URLSearchParams(window.location.search).get("q");
   if (q) setTimeout(() => fetchCoordinates(q), 500);
 })();
+
+/* ==========================================================
+   27. AMBIENT WEATHER SOUNDSCAPE ENGINE (PROCEDURAL AUDIO)
+   ========================================================== */
+class WeatherSoundscape {
+  constructor() {
+    this.audioCtx = null;
+    this.masterGain = null;
+    this.activeNodes = [];
+    this.activeIntervals = [];
+    this.isPlaying = false;
+    this.currentMode = "auto";
+    this.liveWeatherType = "clear";
+    this.isDay = true;
+    this.volume = 0.5;
+
+    this.btn = document.getElementById("soundBtn");
+    this.panel = document.getElementById("soundPanel");
+    this.icon = document.getElementById("soundIcon");
+    this.pulse = document.getElementById("soundPulse");
+    this.badge = document.getElementById("soundStatusBadge");
+    this.desc = document.getElementById("soundConditionText");
+    this.volumeInput = document.getElementById("soundVolume");
+    this.presets = document.querySelectorAll(".preset-btn");
+
+    this._bindEvents();
+  }
+
+  _bindEvents() {
+    if (!this.btn || !this.panel) return;
+
+    this.btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      this.toggleSound();
+    });
+
+    document.addEventListener("click", (e) => {
+      if (!this.panel.contains(e.target) && !this.btn.contains(e.target)) {
+        this.panel.classList.add("hidden");
+      }
+    });
+
+    if (this.volumeInput) {
+      this.volumeInput.addEventListener("input", (e) => {
+        this.volume = parseFloat(e.target.value) / 100;
+        if (this.masterGain && this.audioCtx) {
+          this.masterGain.gain.setTargetAtTime(
+            this.volume,
+            this.audioCtx.currentTime,
+            0.05
+          );
+        }
+      });
+    }
+
+    this.presets.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        this.presets.forEach((p) => p.classList.remove("active"));
+        btn.classList.add("active");
+        this.currentMode = btn.dataset.sound;
+        if (!this.isPlaying) {
+          this.toggleSound(true);
+        } else {
+          this._playCurrentSound();
+        }
+      });
+    });
+  }
+
+  _initAudio() {
+    if (!this.audioCtx) {
+      const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+      this.audioCtx = new AudioContextClass();
+      this.masterGain = this.audioCtx.createGain();
+      this.masterGain.gain.value = this.volume;
+      this.masterGain.connect(this.audioCtx.destination);
+    }
+    if (this.audioCtx.state === "suspended") {
+      this.audioCtx.resume();
+    }
+  }
+
+  toggleSound(forceState = null) {
+    const shouldPlay = forceState !== null ? forceState : !this.isPlaying;
+    if (shouldPlay) {
+      this._initAudio();
+      this.isPlaying = true;
+      this.btn.classList.add("active");
+      if (this.pulse) this.pulse.classList.remove("hidden");
+      if (this.icon) this.icon.textContent = "🔊";
+      if (this.badge) {
+        this.badge.textContent = "ON";
+        this.badge.className = "sound-badge on";
+      }
+      this.panel.classList.remove("hidden");
+      this._playCurrentSound();
+    } else {
+      this.isPlaying = false;
+      this._stopAllNodes();
+      this.btn.classList.remove("active");
+      if (this.pulse) this.pulse.classList.add("hidden");
+      if (this.icon) this.icon.textContent = "🔇";
+      if (this.badge) {
+        this.badge.textContent = "OFF";
+        this.badge.className = "sound-badge off";
+      }
+      if (this.desc) this.desc.textContent = "Soundscape muted";
+    }
+  }
+
+  syncWithWeather(type, isDay) {
+    this.liveWeatherType = type;
+    this.isDay = isDay;
+    if (this.isPlaying && this.currentMode === "auto") {
+      this._playCurrentSound();
+    }
+  }
+
+  _stopAllNodes() {
+    this.activeNodes.forEach((node) => {
+      try {
+        node.stop();
+        node.disconnect();
+      } catch (e) {}
+    });
+    this.activeNodes = [];
+    this.activeIntervals.forEach((id) => clearInterval(id));
+    this.activeIntervals = [];
+  }
+
+  _playCurrentSound() {
+    if (!this.isPlaying) return;
+    this._stopAllNodes();
+    this._initAudio();
+
+    let activeSound = this.currentMode;
+    if (activeSound === "auto") {
+      if (this.liveWeatherType === "clear" && !this.isDay) {
+        activeSound = "night";
+      } else {
+        activeSound = this.liveWeatherType;
+      }
+    }
+
+    if (this.desc) {
+      const descMap = {
+        rain: "🌧️ Ambient gentle rainfall & droplets",
+        thunder: "⛈️ Rolling storm rumbles & heavy rain",
+        wind: "💨 Atmospheric wind turbulence & gusts",
+        clear: "☀️ Serene warm harmonic drone pad",
+        night: "🦗 Serene night ambience & chirps",
+        snow: "🌨️ Soft muffled wind & crystal chimes",
+        clouds: "🌥️ Soft atmospheric breeze & clouds",
+      };
+      this.desc.textContent = descMap[activeSound] || "🎧 Ambient sound active";
+    }
+
+    if (activeSound === "rain") this._createRainSound();
+    else if (activeSound === "thunder") {
+      this._createRainSound();
+      this._createThunderLoop();
+    } else if (activeSound === "wind" || activeSound === "clouds") {
+      this._createWindSound();
+    } else if (activeSound === "night") {
+      this._createNightSound();
+    } else {
+      this._createSereneDrone();
+    }
+  }
+
+  _createNoiseBuffer(duration = 2) {
+    const bufferSize = this.audioCtx.sampleRate * duration;
+    const buffer = this.audioCtx.createBuffer(1, bufferSize, this.audioCtx.sampleRate);
+    const data = buffer.getChannelData(0);
+    for (let i = 0; i < bufferSize; i++) {
+      data[i] = Math.random() * 2 - 1;
+    }
+    return buffer;
+  }
+
+  _createRainSound() {
+    const buffer = this._createNoiseBuffer(3);
+    const noise = this.audioCtx.createBufferSource();
+    noise.buffer = buffer;
+    noise.loop = true;
+
+    const filter = this.audioCtx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.value = 850;
+    filter.Q.value = 0.8;
+
+    const rainGain = this.audioCtx.createGain();
+    rainGain.gain.value = 0.35;
+
+    noise.connect(filter);
+    filter.connect(rainGain);
+    rainGain.connect(this.masterGain);
+    noise.start();
+    this.activeNodes.push(noise);
+  }
+
+  _createThunderLoop() {
+    const triggerThunder = () => {
+      if (!this.isPlaying) return;
+      const osc = this.audioCtx.createOscillator();
+      const gain = this.audioCtx.createGain();
+      osc.type = "sine";
+      const now = this.audioCtx.currentTime;
+
+      osc.frequency.setValueAtTime(80, now);
+      osc.frequency.exponentialRampToValueAtTime(25, now + 3.5);
+
+      gain.gain.setValueAtTime(0, now);
+      gain.gain.linearRampToValueAtTime(0.6, now + 0.3);
+      gain.gain.exponentialRampToValueAtTime(0.01, now + 4);
+
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start(now);
+      osc.stop(now + 4.2);
+      this.activeNodes.push(osc);
+    };
+
+    const interval = setInterval(triggerThunder, 8000);
+    this.activeIntervals.push(interval);
+  }
+
+  _createWindSound() {
+    const buffer = this._createNoiseBuffer(3);
+    const noise = this.audioCtx.createBufferSource();
+    noise.buffer = buffer;
+    noise.loop = true;
+
+    const filter = this.audioCtx.createBiquadFilter();
+    filter.type = "bandpass";
+    filter.frequency.value = 380;
+    filter.Q.value = 3.5;
+
+    const lfo = this.audioCtx.createOscillator();
+    lfo.frequency.value = 0.18;
+    const lfoGain = this.audioCtx.createGain();
+    lfoGain.gain.value = 220;
+
+    lfo.connect(lfoGain);
+    lfoGain.connect(filter.frequency);
+
+    const windGain = this.audioCtx.createGain();
+    windGain.gain.value = 0.3;
+
+    noise.connect(filter);
+    filter.connect(windGain);
+    windGain.connect(this.masterGain);
+
+    noise.start();
+    lfo.start();
+    this.activeNodes.push(noise, lfo);
+  }
+
+  _createSereneDrone() {
+    const now = this.audioCtx.currentTime;
+    const freqs = [130.81, 164.81, 196.00, 246.94];
+    freqs.forEach((f, idx) => {
+      const osc = this.audioCtx.createOscillator();
+      osc.type = idx % 2 === 0 ? "sine" : "triangle";
+      osc.frequency.value = f;
+
+      const gain = this.audioCtx.createGain();
+      gain.gain.value = 0.08;
+
+      const lfo = this.audioCtx.createOscillator();
+      lfo.frequency.value = 0.1 + idx * 0.05;
+      const lfoGain = this.audioCtx.createGain();
+      lfoGain.gain.value = 0.03;
+      lfo.connect(lfoGain);
+      lfoGain.connect(gain.gain);
+
+      osc.connect(gain);
+      gain.connect(this.masterGain);
+      osc.start(now);
+      lfo.start(now);
+      this.activeNodes.push(osc, lfo);
+    });
+  }
+
+  _createNightSound() {
+    this._createSereneDrone();
+    const osc = this.audioCtx.createOscillator();
+    osc.type = "sine";
+    osc.frequency.value = 4200;
+
+    const gain = this.audioCtx.createGain();
+    gain.gain.value = 0.03;
+
+    const lfo = this.audioCtx.createOscillator();
+    lfo.frequency.value = 14;
+    const lfoGain = this.audioCtx.createGain();
+    lfoGain.gain.value = 0.03;
+    lfo.connect(lfoGain);
+    lfoGain.connect(gain.gain);
+
+    osc.connect(gain);
+    gain.connect(this.masterGain);
+    osc.start();
+    lfo.start();
+    this.activeNodes.push(osc, lfo);
+  }
+}
+
+const weatherSoundscape = new WeatherSoundscape();
+
+/* ==========================================================
+   28. 3D CARD PARALLAX TILT & SPECULAR GLINT CONTROLLER
+   ========================================================== */
+function init3DTilt() {
+  if (!window.matchMedia("(pointer: fine)").matches) return;
+
+  const tiltCards = document.querySelectorAll(".glass-card, .glass-metric, .forecast-card");
+  tiltCards.forEach((card) => {
+    if (card._hasTiltListener) return;
+    card._hasTiltListener = true;
+
+    if (!card.querySelector(".card-glint")) {
+      const glint = document.createElement("div");
+      glint.className = "card-glint";
+      card.appendChild(glint);
+    }
+
+    const maxTilt = card.classList.contains("glass-metric") ? 10 : 5;
+
+    card.addEventListener("mousemove", (e) => {
+      if (card.classList.contains("dragging") || (typeof draggedMetric !== "undefined" && draggedMetric !== null)) return;
+
+      const rect = card.getBoundingClientRect();
+      const x = (e.clientX - rect.left - rect.width / 2) / (rect.width / 2);
+      const y = (e.clientY - rect.top - rect.height / 2) / (rect.height / 2);
+
+      const rotateX = (-y * maxTilt).toFixed(2);
+      const rotateY = (x * maxTilt).toFixed(2);
+
+      card.style.transform = `perspective(1000px) rotateX(${rotateX}deg) rotateY(${rotateY}deg) scale3d(1.02, 1.02, 1.02)`;
+
+      card.style.setProperty("--glint-x", `${e.clientX - rect.left}px`);
+      card.style.setProperty("--glint-y", `${e.clientY - rect.top}px`);
+      card.style.setProperty("--glint-opacity", "1");
+    });
+
+    card.addEventListener("mouseleave", () => {
+      card.style.transition = "transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1)";
+      card.style.transform = "perspective(1000px) rotateX(0deg) rotateY(0deg) scale3d(1, 1, 1)";
+      card.style.setProperty("--glint-opacity", "0");
+      setTimeout(() => {
+        card.style.transition = "";
+      }, 400);
+    });
+  });
+}
+
+window.addEventListener("DOMContentLoaded", init3DTilt);
+

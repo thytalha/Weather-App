@@ -196,6 +196,64 @@
             </label>
             <span class="theme-icon" aria-hidden="true">🌙</span>
           </div>
+          <div
+            class="sound-toggle-wrap"
+            role="group"
+            aria-label="Ambient Soundscape"
+          >
+            <button
+              id="soundBtn"
+              class="sound-btn ripple-btn"
+              aria-label="Toggle ambient soundscape"
+              title="Ambient Weather Audio"
+              aria-expanded="false"
+            >
+              <span id="soundIcon" class="sound-icon" aria-hidden="true">🔇</span>
+              <span id="soundPulse" class="sound-pulse hidden"></span>
+            </button>
+            <div
+              id="soundPanel"
+              class="sound-panel hidden glass-card"
+              role="dialog"
+              aria-label="Soundscape Controls"
+            >
+              <div class="sound-panel-header">
+                <span class="sound-panel-title">🎧 Weather Soundscape</span>
+                <span id="soundStatusBadge" class="sound-badge off">OFF</span>
+              </div>
+              <p id="soundConditionText" class="sound-desc">
+                Procedural audio matched to live weather
+              </p>
+              <div class="sound-volume-row">
+                <span aria-hidden="true">🔈</span>
+                <input
+                  type="range"
+                  id="soundVolume"
+                  min="0"
+                  max="100"
+                  value="50"
+                  aria-label="Sound volume"
+                />
+                <span aria-hidden="true">🔊</span>
+              </div>
+              <div class="sound-presets">
+                <button class="preset-btn active" data-sound="auto">
+                  ⚡ Auto (Live Weather)
+                </button>
+                <button class="preset-btn" data-sound="rain">🌧️ Rain</button>
+                <button class="preset-btn" data-sound="thunder">
+                  ⛈️ Thunder
+                </button>
+                <button class="preset-btn" data-sound="wind">💨 Wind</button>
+                <button class="preset-btn" data-sound="clear">
+                  ☀️ Serene Drone
+                </button>
+                <button class="preset-btn" data-sound="night">
+                  🦗 Night Crickets
+                </button>
+              </div>
+            </div>
+          </div>
           <button
             id="currentLocBtn"
             class="loc-btn ripple-btn"
@@ -215,8 +273,8 @@
               <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
             </svg>
             <span>My Location</span>
-          </button>
-        </div>
+            </button>
+          </div>
       </nav>
     </header>
 
