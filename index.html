@@ -1,84 +1,511 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title id="pageTitle">MosamCheck — Real-Time Weather Dashboard</title>
+    <meta
+      name="description"
+      id="pageDesc"
+      content="Get real-time weather forecasts, hourly updates, and 7-day outlooks for any city worldwide. Fast, accurate, and beautifully designed."
+    />
+    <meta
+      name="keywords"
+      content="weather, forecast, real-time weather, hourly forecast, 7-day forecast, mosamcheck, Pakistan weather, air quality"
+    />
+    <meta name="author" content="Talha Pasha" />
+    <meta name="robots" content="index, follow" />
+    <meta name="theme-color" content="#0d1117" />
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:title"
+      id="ogTitle"
+      content="MosamCheck — Real-Time Weather Dashboard"
+    />
+    <meta
+      property="og:description"
+      content="Beautiful real-time weather forecasts for any city worldwide."
+    />
+    <meta property="og:url" content="https://mosamcheck.me" />
+    <meta property="og:site_name" content="MosamCheck" />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="MosamCheck — Real-Time Weather" />
+    <meta
+      name="twitter:description"
+      content="Real-time weather forecasts for any city worldwide."
+    />
+    <link
+      rel="icon"
+      type="image/png"
+      sizes="32x32"
+      href="assets/images/favicon_new.png"
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Poppins:wght@300;400;500;600;700&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="css/style.css" />
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "MosamCheck",
+        "description": "Real-time weather dashboard providing current conditions, hourly and 7-day forecasts for cities worldwide.",
+        "url": "https://mosamcheck.me",
+        "applicationCategory": "WeatherApplication",
+        "creator": { "@type": "Person", "name": "Talha Pasha" }
+      }
+    </script>
+  </head>
+  <body class="dark-mode" data-weather="clear">
+    <!-- =============================================
+         WEATHER PARTICLE CANVAS (Fixed Background)
+    ============================================= -->
+    <canvas id="weatherCanvas" aria-hidden="true"></canvas>
 
-<head>
-  <meta charset="UTF-8">
-  <title>Weather Dashboard</title>
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon_new.png">
-  <link rel="stylesheet" href="style.css">
-</head>
-
-<body class="dark-mode">
-
-  <div class="top-nav">
-    <div class="theme-toggle">
-      <input type="checkbox" id="themeSwitch" checked>
-      <label for="themeSwitch" class="toggle-label"></label>
+    <!-- =============================================
+         AURORA BACKGROUND
+    ============================================= -->
+    <div class="aurora" aria-hidden="true">
+      <div class="aurora-blob blob-1"></div>
+      <div class="aurora-blob blob-2"></div>
+      <div class="aurora-blob blob-3"></div>
     </div>
 
-    <div class="search-box">
-      <input type="text" id="cityInput" placeholder="Enter your city">
-    </div>
-
-    <button id="currentLocBtn">Current Location</button>
-  </div>
-
-  <h1 class="main-title">Weather Forecast</h1>
-
-  <div id="loading" class="hidden" style="text-align: center; margin-top: 20px;">Loading...</div>
-  <div id="error" class="error hidden" style="text-align: center;"></div>
-
-  <div id="weatherDashboard" class="dashboard hidden">
-    <div class="location-row">
-      <h2 id="location">City, Country</h2>
-    </div>
-
-    <div class="forecast-row">
-      <div class="temp-col">
-        <h1 id="temperature">0°C</h1>
-        <div class="sun-info">
-          <p>Sunrise<br><span id="sunrise">--:-- AM</span></p>
-          <p>Sunset<br><span id="sunset">--:-- PM</span></p>
+    <!-- =============================================
+         WEATHER ALERT BANNER
+    ============================================= -->
+    <div
+      id="alertBanner"
+      class="alert-banner hidden"
+      role="alert"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      <div class="alert-inner">
+        <div class="alert-icon-wrap">
+          <span class="alert-pulse-ring"></span>
+          <span class="alert-icon">⚠️</span>
         </div>
+        <div class="alert-content">
+          <strong class="alert-headline" id="alertHeadline"
+            >Weather Alert</strong
+          >
+          <p class="alert-desc" id="alertDesc"></p>
+        </div>
+        <div class="alert-nav" id="alertNav"></div>
+        <button
+          class="alert-dismiss"
+          id="alertDismiss"
+          aria-label="Dismiss weather alert"
+        >
+          ✕
+        </button>
+      </div>
+    </div>
+
+    <!-- =============================================
+         TOP NAVIGATION
+    ============================================= -->
+    <header class="site-header" role="banner">
+      <nav class="top-nav" role="navigation" aria-label="Main navigation">
+        <a class="nav-brand" href="/" aria-label="MosamCheck home">
+          <span class="brand-icon" aria-hidden="true">🌤️</span>
+          <span class="brand-name">MosamCheck</span>
+        </a>
+
+        <div class="search-wrapper" role="search" aria-label="City search">
+          <div class="search-box">
+            <span class="search-icon" aria-hidden="true">
+              <svg
+                width="16"
+                height="16"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2.5"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <circle cx="11" cy="11" r="8" />
+                <path d="m21 21-4.35-4.35" />
+              </svg>
+            </span>
+            <input
+              type="text"
+              id="cityInput"
+              placeholder="Search any city..."
+              autocomplete="off"
+              aria-label="Search for a city to get weather"
+              aria-expanded="false"
+              aria-haspopup="listbox"
+              aria-controls="searchSuggestions"
+              aria-autocomplete="list"
+              role="combobox"
+            />
+            <button
+              class="clear-btn hidden"
+              id="clearBtn"
+              aria-label="Clear search"
+            >
+              ✕
+            </button>
+            <div
+              id="searchSuggestions"
+              class="suggestions-dropdown hidden"
+              role="listbox"
+              aria-label="City suggestions"
+              aria-live="polite"
+            ></div>
+          </div>
+        </div>
+
+        <div class="nav-controls">
+          <div class="unit-toggle" role="group" aria-label="Temperature unit">
+            <button class="unit-btn active" id="celsiusBtn" aria-pressed="true">
+              °C
+            </button>
+            <button class="unit-btn" id="fahrenheitBtn" aria-pressed="false">
+              °F
+            </button>
+          </div>
+          <div class="unit-toggle" role="group" aria-label="Wind speed unit">
+            <button class="unit-btn active" id="kphBtn" aria-pressed="true">
+              km/h
+            </button>
+            <button class="unit-btn" id="mphBtn" aria-pressed="false">
+              mph
+            </button>
+          </div>
+          <div
+            class="theme-toggle-wrap"
+            role="group"
+            aria-label="Display theme"
+          >
+            <span class="theme-icon" aria-hidden="true">☀️</span>
+            <label class="toggle-label" for="themeSwitch">
+              <input
+                type="checkbox"
+                id="themeSwitch"
+                checked
+                aria-label="Toggle dark mode"
+              />
+              <span class="toggle-track" aria-hidden="true"></span>
+            </label>
+            <span class="theme-icon" aria-hidden="true">🌙</span>
+          </div>
+          <div
+            class="sound-toggle-wrap"
+            role="group"
+            aria-label="Ambient Soundscape"
+          >
+            <button
+              id="soundBtn"
+              class="sound-btn ripple-btn"
+              aria-label="Toggle ambient soundscape"
+              title="Ambient Weather Audio"
+              aria-expanded="false"
+            >
+              <span id="soundIcon" class="sound-icon" aria-hidden="true">🔇</span>
+              <span id="soundPulse" class="sound-pulse hidden"></span>
+            </button>
+            <div
+              id="soundPanel"
+              class="sound-panel hidden glass-card"
+              role="dialog"
+              aria-label="Soundscape Controls"
+            >
+              <div class="sound-panel-header">
+                <span class="sound-panel-title">🎧 Weather Soundscape</span>
+                <span id="soundStatusBadge" class="sound-badge off">OFF</span>
+              </div>
+              <p id="soundConditionText" class="sound-desc">
+                Procedural audio matched to live weather
+              </p>
+              <div class="sound-volume-row">
+                <span aria-hidden="true">🔈</span>
+                <input
+                  type="range"
+                  id="soundVolume"
+                  min="0"
+                  max="100"
+                  value="50"
+                  aria-label="Sound volume"
+                />
+                <span aria-hidden="true">🔊</span>
+              </div>
+              <div class="sound-presets">
+                <button class="preset-btn active" data-sound="auto">
+                  ⚡ Auto (Live Weather)
+                </button>
+                <button class="preset-btn" data-sound="rain">🌧️ Rain</button>
+                <button class="preset-btn" data-sound="thunder">
+                  ⛈️ Thunder
+                </button>
+                <button class="preset-btn" data-sound="wind">💨 Wind</button>
+                <button class="preset-btn" data-sound="clear">
+                  ☀️ Serene Drone
+                </button>
+                <button class="preset-btn" data-sound="night">
+                  🦗 Night Crickets
+                </button>
+              </div>
+            </div>
+          </div>
+          <button
+            id="currentLocBtn"
+            class="loc-btn ripple-btn"
+            aria-label="Use my current location"
+          >
+            <svg
+              width="14"
+              height="14"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            >
+              <circle cx="12" cy="12" r="3" />
+              <path d="M12 2v3M12 19v3M2 12h3M19 12h3" />
+            </svg>
+            <span>My Location</span>
+          </button>
+        </div>
+      </nav>
+    </header>
+
+    <!-- =============================================
+         MAIN CONTENT
+    ============================================= -->
+    <main id="mainContent" role="main">
+      <div
+        id="loading"
+        class="loading-screen hidden"
+        role="status"
+        aria-live="polite"
+      >
+        <div class="weather-spinner" aria-hidden="true">
+          <div class="spinner-sun"></div>
+          <div class="spinner-ring"></div>
+          <div class="spinner-cloud">⛅</div>
+        </div>
+        <p class="loading-text">
+          Fetching weather data<span class="dots"
+            ><span>.</span><span>.</span><span>.</span></span
+          >
+        </p>
       </div>
 
-      <div class="icon-col">
-        <div id="weatherIcon" class="large-icon">☀️</div>
-        <p id="condition" class="condition-text">Clear</p>
+      <div
+        id="error"
+        class="error-card hidden"
+        role="alert"
+        aria-live="assertive"
+      ></div>
+
+      <!-- =============================================
+             WEATHER DASHBOARD
+        ============================================= -->
+      <div id="weatherDashboard" class="dashboard hidden">
+        <!-- Location Header -->
+        <section
+          class="location-section"
+          aria-label="Current location and time"
+        >
+          <h1 class="main-title" id="location" aria-live="polite">
+            City, Country
+          </h1>
+          <p class="update-time" id="updateTime" aria-live="polite"></p>
+        </section>
+
+        <!-- Current Conditions Card -->
+        <section
+          class="forecast-row glass-card"
+          aria-labelledby="currentWeatherHeading"
+        >
+          <h2 id="currentWeatherHeading" class="sr-only">
+            Current Weather Conditions
+          </h2>
+
+          <div class="temp-col">
+            <div class="temp-display">
+              <p
+                id="temperature"
+                class="temperature-value"
+                aria-label="Current temperature"
+              >
+                0°C
+              </p>
+              <p class="feels-like">
+                Feels like <span id="feelsLike">0°C</span>
+              </p>
+            </div>
+            <div class="sun-info" aria-label="Sun schedule">
+              <div class="sun-item">
+                <span class="sun-icon" aria-hidden="true">🌅</span>
+                <div>
+                  <span class="sun-label">Sunrise</span>
+                  <span id="sunrise" class="sun-time">--:-- AM</span>
+                </div>
+              </div>
+              <div class="sun-item">
+                <span class="sun-icon" aria-hidden="true">🌇</span>
+                <div>
+                  <span class="sun-label">Sunset</span>
+                  <span id="sunset" class="sun-time">--:-- PM</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div class="icon-col">
+            <div
+              id="weatherIcon"
+              class="large-icon pulse-icon"
+              role="img"
+              aria-label="Current weather condition icon"
+            >
+              ☀️
+            </div>
+            <p id="condition" class="condition-text">Clear</p>
+          </div>
+
+          <!-- Metrics Grid — draggable items -->
+          <ul
+            class="metrics-grid"
+            id="metricsGrid"
+            role="list"
+            aria-label="Weather metrics (drag to reorder)"
+          >
+            <li
+              class="metric glass-metric"
+              role="listitem"
+              draggable="true"
+              data-metric="humidity"
+              tabindex="0"
+              aria-label="Humidity metric — drag to reorder"
+            >
+              <span class="drag-handle" aria-hidden="true">⠿</span>
+              <span class="metric-icon" aria-hidden="true">💧</span>
+              <span id="humidity" class="metric-value">0%</span>
+              <span class="metric-label">Humidity</span>
+            </li>
+            <li
+              class="metric glass-metric"
+              role="listitem"
+              draggable="true"
+              data-metric="wind"
+              tabindex="0"
+              aria-label="Wind Speed metric — drag to reorder"
+            >
+              <span class="drag-handle" aria-hidden="true">⠿</span>
+              <span class="metric-icon" aria-hidden="true">💨</span>
+              <span id="wind" class="metric-value">0 km/h</span>
+              <span class="metric-label">Wind Speed</span>
+              <span id="windDir" class="metric-sub"></span>
+            </li>
+            <li
+              class="metric glass-metric"
+              role="listitem"
+              draggable="true"
+              data-metric="pressure"
+              tabindex="0"
+              aria-label="Pressure metric — drag to reorder"
+            >
+              <span class="drag-handle" aria-hidden="true">⠿</span>
+              <span class="metric-icon" aria-hidden="true">⏲️</span>
+              <span id="pressure" class="metric-value">0 in</span>
+              <span class="metric-label">Pressure</span>
+            </li>
+            <li
+              class="metric glass-metric"
+              role="listitem"
+              draggable="true"
+              data-metric="uv"
+              tabindex="0"
+              aria-label="UV Index metric — drag to reorder"
+            >
+              <span class="drag-handle" aria-hidden="true">⠿</span>
+              <span class="metric-icon" aria-hidden="true">🔆</span>
+              <span id="uv" class="metric-value">0</span>
+              <span class="metric-label">UV Index</span>
+              <span id="uvLabel" class="metric-sub"></span>
+            </li>
+          </ul>
+        </section>
+
+        <!-- AQI Section (new) -->
+        <section
+          id="aqiSection"
+          class="aqi-section glass-card hidden"
+          aria-label="Air Quality Index"
+        ></section>
+
+        <!-- 24-Hour Forecast + Interactive Chart -->
+        <section aria-labelledby="hourlyHeading">
+          <h2 id="hourlyHeading" class="section-subtitle">24-Hour Forecast</h2>
+          <div class="chart-container glass-card" id="chartContainer">
+            <div class="chart-legend" id="chartLegend">
+              <span class="legend-item"
+                ><span class="legend-line temp-line"></span>Temperature</span
+              >
+              <span class="legend-item"
+                ><span class="legend-bar rain-bar"></span>Rain %</span
+              >
+            </div>
+            <canvas
+              id="tempChart"
+              aria-label="Temperature trend chart for the next 24 hours"
+            ></canvas>
+            <div id="chartTooltip" class="chart-tooltip hidden"></div>
+          </div>
+          <div
+            id="hourlyContainer"
+            class="hourly-container"
+            role="list"
+            aria-label="Hourly weather forecast"
+          ></div>
+        </section>
+
+        <!-- 3-Day Forecast -->
+        <section aria-labelledby="weeklyHeading">
+          <h2 id="weeklyHeading" class="section-subtitle">3-Day Outlook</h2>
+          <div
+            id="forecastContainer"
+            class="forecast-container"
+            role="list"
+            aria-label="3-day weather forecast"
+          ></div>
+        </section>
       </div>
+    </main>
 
-      <div class="metrics-grid">
-        <div class="metric">
-          <span class="icon">💧</span>
-          <span id="humidity" class="value">0%</span>
-          <span class="label">Humidity</span>
-        </div>
-        <div class="metric">
-          <span class="icon">💨</span>
-          <span id="wind" class="value">0 km/h</span>
-          <span class="label">Wind Speed</span>
-        </div>
-        <div class="metric">
-          <span class="icon">⏲️</span>
-          <span id="pressure" class="value">0 Inch</span>
-          <span class="label">Pressure</span>
-        </div>
-        <div class="metric">
-          <span class="icon">☀️</span>
-          <span id="uv" class="value">0</span>
-          <span class="label">UV Index</span>
-        </div>
+    <!-- =============================================
+         FOOTER
+    ============================================= -->
+    <footer role="contentinfo" class="site-footer">
+      <div class="footer-inner">
+        <p class="footer-copy">
+          &copy; <span id="currentYear"></span> <strong>Talha Pasha</strong>.
+          All Rights Reserved.
+        </p>
+        <p class="footer-tagline">
+          Powered by
+          <a
+            href="https://www.weatherapi.com"
+            target="_blank"
+            rel="noopener noreferrer"
+            >WeatherAPI</a
+          >
+          &amp; OpenStreetMap
+        </p>
       </div>
-    </div>
-    <h3 class="section-subtitle">12-Hour Forecast</h3>
-    <div id="hourlyContainer" class="hourly-container"></div>
+    </footer>
 
-    <h3 class="section-subtitle">7-Day Forecast</h3>
-    <div id="forecastContainer" class="forecast-container"></div>
-
-  </div>
-
-  <script src="script.js"></script>
-</body>
-
+    <script src="js/script.js"></script>
+  </body>
 </html>
