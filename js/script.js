@@ -260,10 +260,14 @@ class WeatherParticles {
     const H = this.canvas.height;
     ctx.clearRect(0, 0, W, H);
 
+    const isDarkMode = document.body.classList.contains("dark-mode");
+
     /* Lightning flash overlay */
     if (this.type === "thunder" && this.lightningFlash > 0) {
-      const alpha = (this.lightningFlash / 8) * 0.18;
-      ctx.fillStyle = `rgba(210, 220, 255, ${alpha})`;
+      const alpha = (this.lightningFlash / 8) * (isDarkMode ? 0.18 : 0.25);
+      ctx.fillStyle = isDarkMode
+        ? `rgba(210, 220, 255, ${alpha})`
+        : `rgba(150, 180, 240, ${alpha})`;
       ctx.fillRect(0, 0, W, H);
 
       /* Occasional bolt */
@@ -283,8 +287,11 @@ class WeatherParticles {
       switch (this.type) {
         case "rain":
         case "thunder": {
-          ctx.strokeStyle = `rgba(180, 220, 255, ${p.opacity})`;
-          ctx.lineWidth = p.width;
+          const strokeColor = isDarkMode
+            ? `rgba(180, 220, 255, ${p.opacity})`
+            : `rgba(25, 80, 155, ${Math.min(1, p.opacity * 1.8)})`;
+          ctx.strokeStyle = strokeColor;
+          ctx.lineWidth = isDarkMode ? p.width : p.width * 1.45;
           ctx.beginPath();
           ctx.moveTo(p.x, p.y);
           ctx.lineTo(p.x + p.speed * 0.18, p.y + p.length);
@@ -293,7 +300,10 @@ class WeatherParticles {
         }
         case "snow": {
           const a = p.opacity * (0.65 + 0.35 * Math.sin(p.drift));
-          ctx.fillStyle = `rgba(255,255,255,${a})`;
+          const fillColor = isDarkMode
+            ? `rgba(255, 255, 255, ${a})`
+            : `rgba(75, 125, 185, ${Math.min(1, a * 1.7)})`;
+          ctx.fillStyle = fillColor;
           ctx.beginPath();
           ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
           ctx.fill();
@@ -302,7 +312,10 @@ class WeatherParticles {
         case "clear": {
           if (!this.isDay && p.twinkle !== undefined) {
             const a = p.opacity * (0.45 + 0.55 * Math.abs(Math.sin(p.twinkle)));
-            ctx.fillStyle = `rgba(255,255,255,${a})`;
+            const fillColor = isDarkMode
+              ? `rgba(255, 255, 255, ${a})`
+              : `rgba(60, 95, 160, ${Math.min(1, a * 1.6)})`;
+            ctx.fillStyle = fillColor;
             ctx.beginPath();
             ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
             ctx.fill();
@@ -315,10 +328,15 @@ class WeatherParticles {
   }
 
   drawLightningBolt(ctx, startX, startY, endX, endY) {
+    const isDarkMode = document.body.classList.contains("dark-mode");
     ctx.save();
-    ctx.strokeStyle = "rgba(255,255,255,0.85)";
-    ctx.lineWidth = 1.5;
-    ctx.shadowColor = "rgba(180,200,255,0.9)";
+    ctx.strokeStyle = isDarkMode
+      ? "rgba(255, 255, 255, 0.85)"
+      : "rgba(25, 65, 140, 0.9)";
+    ctx.lineWidth = isDarkMode ? 1.5 : 2.2;
+    ctx.shadowColor = isDarkMode
+      ? "rgba(180, 200, 255, 0.9)"
+      : "rgba(30, 70, 150, 0.6)";
     ctx.shadowBlur = 10;
     ctx.beginPath();
     const segments = 6;
@@ -644,6 +662,10 @@ let tempChart = null;
    ========================================================== */
 themeSwitch.addEventListener("change", () => {
   document.body.classList.toggle("dark-mode", themeSwitch.checked);
+  if (typeof weatherParticles !== "undefined") {
+    weatherParticles.isDay = !themeSwitch.checked;
+    weatherParticles.initParticles();
+  }
 });
 
 /* ==========================================================
