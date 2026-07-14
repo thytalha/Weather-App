@@ -660,13 +660,30 @@ let tempChart = null;
 /* ==========================================================
    THEME TOGGLE
    ========================================================== */
-themeSwitch.addEventListener("change", () => {
-  document.body.classList.toggle("dark-mode", themeSwitch.checked);
+const THEME_KEY = "mosamcheck_theme_preference";
+
+function initTheme() {
+  const savedTheme = localStorage.getItem(THEME_KEY);
+  const isDark = savedTheme === "light" ? false : true;
+  document.body.classList.toggle("dark-mode", isDark);
+  if (themeSwitch) themeSwitch.checked = isDark;
   if (typeof weatherParticles !== "undefined") {
-    weatherParticles.isDay = !themeSwitch.checked;
+    weatherParticles.isDay = !isDark;
+    weatherParticles.initParticles();
+  }
+}
+
+themeSwitch.addEventListener("change", () => {
+  const isDark = themeSwitch.checked;
+  document.body.classList.toggle("dark-mode", isDark);
+  localStorage.setItem(THEME_KEY, isDark ? "dark" : "light");
+  if (typeof weatherParticles !== "undefined") {
+    weatherParticles.isDay = !isDark;
     weatherParticles.initParticles();
   }
 });
+
+initTheme();
 
 /* ==========================================================
    UNIT TOGGLES
@@ -1323,11 +1340,6 @@ function setDynamicBackground(code, isDay) {
   if (typeof weatherSoundscape !== "undefined" && weatherSoundscape) {
     weatherSoundscape.syncWithWeather(type, isDay === 1);
   }
-
-  /* Sync light/dark to time of day */
-  const isDark = isDay === 0;
-  document.body.classList.toggle("dark-mode", isDark);
-  themeSwitch.checked = isDark;
 }
 
 /* ==========================================================
